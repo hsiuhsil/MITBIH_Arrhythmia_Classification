@@ -1,0 +1,10 @@
+# Ignore dataset and reference folders
+data/
+references/
+
+# Optional: Ignore notebook checkpoints and Python cache
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
