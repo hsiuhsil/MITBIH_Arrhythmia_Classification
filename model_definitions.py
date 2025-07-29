@@ -1,6 +1,18 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+""" define the models (AcharyaCNN, ECGCNN, LSTM, iTransformer, etc) in this script"""
+
+def get_models(num_classes=5):
+    return {
+        'AcharyaCNN': AcharyaCNN(num_classes=num_classes),
+        'ECGCNN':     ECGCNN(num_classes=num_classes),
+        'iTransformer': iTransformer(num_classes=num_classes)
+    }
 
 class AcharyaCNN(nn.Module):
+    """ the original methodology was described in Acharya et.al. (2017)"""
     def __init__(self, num_classes=5):
         super(AcharyaCNN, self).__init__()
         
@@ -39,71 +51,44 @@ class AcharyaCNN(nn.Module):
         x = self.fc3(x)                         # (B, 5)
         return x
 
+# the baseline mode of 1DCNN
 class ECGCNN(nn.Module):
-    def __init__(self, kernel_size=5, dropout=0.3, filters1=32, filters2=64, fc1_size=130, num_classes=5, use_third_conv=False):
+    """the ECGCNN model in this study"""
+    def __init__(self, kernel_size=5, dropout=0.3, filters1=32, filters2=64, fc1_size=130, num_classes=5, filters3=None, use_third_conv=False):
         super(ECGCNN, self).__init__()
         self.conv1 = nn.Conv1d(1, filters1, kernel_size=kernel_size, padding=kernel_size//2)
         self.bn1 = nn.BatchNorm1d(filters1)
         self.conv2 = nn.Conv1d(filters1, filters2, kernel_size=kernel_size, padding=kernel_size//2)
         self.bn2 = nn.BatchNorm1d(filters2)
         self.pool = nn.MaxPool1d(2)
+
+        self.use_third_conv = use_third_conv
+        if self.use_third_conv and filters3:
+            self.conv3 = nn.Conv1d(filters2, filters3, kernel_size=kernel_size, padding=kernel_size//2)
+            self.bn3 = nn.BatchNorm1d(filters3)
+        
         self.dropout = nn.Dropout(dropout)
 
         # Determine output size after conv+pool layers
         with torch.no_grad():
-            dummy_input = torch.zeros(1, 1, 260)
-            out = self.pool(F.relu(self.bn1(self.conv1(dummy_input))))
+            dummy = torch.zeros(1, 1, 260)
+            out = self.pool(F.relu(self.bn1(self.conv1(dummy))))
             out = self.pool(F.relu(self.bn2(self.conv2(out))))
+            if use_third_conv:
+                out = self.pool(F.relu(self.bn3(self.conv3(out))))
             self.flatten_dim = out.view(1, -1).shape[1]
 
         self.fc1 = nn.Linear(self.flatten_dim, fc1_size)
         self.fc2 = nn.Linear(fc1_size, num_classes)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.bn1(self.conv1(x))))  # (B, 32, 130)
-        x = self.pool(F.relu(self.bn2(self.conv2(x))))  # (B, 64, 64)
-        x = x.view(x.size(0), -1)                       # flatten
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))  
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        if self.use_third_conv:
+            x = self.pool(F.relu(self.bn3(self.conv3(x))))        
+        x = x.view(x.size(0), -1)                      
         x = self.dropout(F.relu(self.fc1(x)))
         return self.fc2(x)
-
-class LSTM(nn.Module):
-    def __init__(self, input_len=260, num_classes=5):
-        super(LSTM, self).__init__()
-        self.lstm1 = nn.LSTM(input_size=1, hidden_size=64, batch_first=True)
-        self.dropout1 = nn.Dropout(0.2)
-        self.lstm2 = nn.LSTM(input_size=64, hidden_size=32, batch_first=True)
-        self.dropout2 = nn.Dropout(0.2)
-        self.lstm3 = nn.LSTM(input_size=32, hidden_size=16, batch_first=True)
-        self.fc = nn.Linear(16 ,5)
-
-    def forward(self, x):
-
-        x = x.permute(0, 2, 1) # [batch_size, input_len, 1]
-        
-        out, (hn1, cn1) = self.lstm1(x)
-        #print("After lstm1:")
-        #print(f"  out shape: {out.shape}")
-        #print(f"  hn1 shape: {hn1.shape}")
-        
-        out = self.dropout1(out)
-        
-        out, (hn2, cn2) = self.lstm2(out)
-        #print("After lstm2:")
-        #print(f"  out shape: {out.shape}")
-        #print(f"  hn2 shape: {hn2.shape}")
-        
-        out = self.dropout2(out)
-        
-        out, (hn3, cn3) = self.lstm3(out)
-        #print("After lstm3:")
-        #print(f"  out shape: {out.shape}")
-        #print(f"  hn3 shape: {hn3.shape}")
-        
-        out = hn3[-1,:,:]
-        #print(f"Final squeezed hn shape: {out.shape}")
-        
-        out = self.fc(out)
-        return out 
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=260):
@@ -121,45 +106,8 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pe[:, :x.size(1), :]
 
-class TestiTransformer(nn.Module):
-    def __init__(self, input_dim=1, d_model=64, nhead=4, num_layers=2,
-                 dropout=0.1, max_len=260, num_classes=5):
-        super(iTransformer, self).__init__()
-
-        self.input_proj = nn.Linear(input_dim, d_model)
-        self.pos_encoder = PositionalEncoding(d_model, max_len=max_len)
-
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=nhead,
-            dropout=dropout,
-            batch_first=True
-        )
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
-
-        self.global_pool = nn.AdaptiveAvgPool1d(1)
-        
-        self.classifier = nn.Sequential(
-            nn.Linear(d_model, 64),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(64, num_classes)
-        )
-
-    def forward(self, x):
-
-        x = x.transpose(1,2)
-        x = self.input_proj(x)
-        x = self.pos_encoder(x)
-        x = self.transformer_encoder(x)
-
-        x = x.transpose(1,2)
-        x = self.global_pool(x)
-        x = x.squeeze(-1)
-        
-        return self.classifier(x)
-
 class iTransformer(nn.Module):
+    """the iTransformer for this study"""
     def __init__(self, input_len=260, num_classes=5, emb_dim=128, num_heads=4, ff_dim=256, num_layers=4, dropout=0.1):
         super(iTransformer, self).__init__()
 
@@ -208,6 +156,3 @@ class iTransformer(nn.Module):
         # Take the CLS token output
         cls_out = x[:, 0, :]  # (B, emb_dim)
         return self.fc(cls_out)  # (B, num_classes)
-
-
-

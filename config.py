@@ -1,19 +1,24 @@
-import torch
+"""define config """
+import os
 
-# Paths
-DATA_PATH = "./data/"
-RESULTS_PATH = "./results/"
-MODEL_PATH = "./results/best_model.pt"
-
-# Device
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Model Parameters
-NUM_CLASSES = 5
-INPUT_SHAPE = (1, 187)
-
-# Training Parameters
-BATCH_SIZE = 64
-EPOCHS = 30
-LR = 1e-3
+# General config
 SEED = 42
+BATCH_SIZE = 64
+WINDOW_SIZE = 130
+EPOCHS = 20
+DEVICE = 'cpu'
+
+# Class mappings
+AAMI_MAP = {
+    'N': 'N', 'L': 'N', 'R': 'N', 'e': 'N', 'j': 'N',
+    'A': 'S', 'a': 'S', 'J': 'S', 'S': 'S',
+    'V': 'V', 'E': 'V',
+    'F': 'F',
+    '/': 'Q', 'f': 'Q', 'Q': 'Q'
+}
+CLASS_NAMES = ['N', 'S', 'V', 'F', 'Q']
+LABEL_MAP = {label: idx for idx, label in enumerate(CLASS_NAMES)}
+
+DATA_DIR = "./data/physionet.org/files/mitdb/1.0.0"
+OUTPUT_DIR = "./temp"
+MODEL_SAVE_PATH = os.path.join(OUTPUT_DIR, "ecgcnn_optuna.pth")
