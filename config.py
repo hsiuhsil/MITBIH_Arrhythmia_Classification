@@ -22,3 +22,4 @@ LABEL_MAP = {label: idx for idx, label in enumerate(CLASS_NAMES)}
 DATA_DIR = "./data/physionet.org/files/mitdb/1.0.0"
 OUTPUT_DIR = "./temp"
 MODEL_SAVE_PATH = os.path.join(OUTPUT_DIR, "ecgcnn_optuna.pth")
+STUDY_PATH = os.path.join(OUTPUT_DIR,"optuna_study.pkl")

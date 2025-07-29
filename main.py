@@ -4,7 +4,7 @@ from dataloader import get_dataloaders
 from model_definitions import AcharyaCNN, ECGCNN, iTransformer
 from train_utils import train_model, evaluate_model
 from metrics import plot_confusion_matrix
-from optuna_utils import run_optuna_study, save_best_trial_model
+from optuna_utils import get_or_run_study, save_best_trial_model
 from utils import set_seed
 
 import torch
@@ -34,11 +34,11 @@ def main():
 #        results[name] = acc
 
     print("\nRunning Optuna tuning...")
-    study = run_optuna_study(train_loader, val_loader)
+    study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=30)
     best_model = save_best_trial_model(study, trainval_loader, save_path=MODEL_SAVE_PATH, device=device)
 
     print("\nFinal Evaluation on Test Set:")
-    acc, preds, labels = evaluate_final_model(best_model, test_loader, device, CLASS_NAMES)
+    acc, preds, labels = evaluate_model(best_model, test_loader, device, CLASS_NAMES)
     plot_confusion_matrix(labels, preds, CLASS_NAMES, title="Optuna-Tuned ECGCNN")
     results["Optuna_ECGCNN"] = acc
 

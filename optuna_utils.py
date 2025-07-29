@@ -85,6 +85,18 @@ def run_optuna_study(train_loader, val_loader, n_trials=30):
 
     return study
 
+def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
+    """Load an existing Optuna study if available; otherwise, run and save a new one."""
+    if os.path.exists(study_path):
+        print(f"Loading existing Optuna study from: {study_path}")
+        study = load_study(study_path)
+    else:
+        print("No existing study found. Running new Optuna study...")
+        study = run_optuna_study(train_loader, val_loader, n_trials)
+        save_study(study, study_path)
+        print(f"Study saved to: {study_path}")
+    return study
+
 def save_best_trial_model(study, trainval_loader, save_path="results/best_model.pth", device="cpu"):
     """ save the best trial model """
     best_params = study.best_trial.params
