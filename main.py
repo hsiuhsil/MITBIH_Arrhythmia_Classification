@@ -3,7 +3,7 @@ from preprocessing import run_pipeline
 from dataloader import get_dataloaders
 from model_definitions import AcharyaCNN, ECGCNN, iTransformer
 from train_utils import train_model, evaluate_model
-from metrics import plot_confusion_matrix
+from metrics import plot_training_curves, plot_confusion_matrix, save_classification_report, plot_roc_pr_curves
 from optuna_utils import get_or_run_study, save_best_trial_model
 from utils import set_seed
 
@@ -23,15 +23,31 @@ def main():
     models = [("AcharyaCNN", AcharyaCNN), ("ECGCNN", ECGCNN), ("iTransformer", iTransformer)]
     results = {}
 
-#    for name, model_cls in models:
-#        print(f"\nTraining {name}...")
-#        model = model_cls().to(device)
-#        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-#        criterion = torch.nn.CrossEntropyLoss()
-#        model = train_model(model, train_loader, val_loader, optimizer, criterion, EPOCHS, device)
-#        acc, preds, labels = evaluate_model(model, test_loader, device, class_names=CLASS_NAMES)
-#        plot_confusion_matrix(labels, preds, CLASS_NAMES, title=f"{name} Confusion Matrix")
-#        results[name] = acc
+    for name, model_cls in models:
+        print(f"\nTraining {name}...")
+        model = model_cls().to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+        criterion = torch.nn.CrossEntropyLoss()
+
+        model = train_model(model, train_loader, val_loader, optimizer, criterion, EPOCHS, device)
+        acc, preds, labels, probs = evaluate_model(model, test_loader, device, class_names=CLASS_NAMES)
+        
+        # Plot training curves
+        curve_path = os.path.join(OUTPUT_DIR, f"{name}_training_curves.png")
+        plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=curve_path)
+
+        # Save Confusion Matrix
+        cm_path = os.path.join(OUTPUT_DIR, f"{name}_confusion_matrix.png")
+        plot_confusion_matrix(labels, preds, CLASS_NAMES, title=f"{name} Confusion Matrix", save_path=cm_path)
+
+        # Save Classification Report
+        report_path = os.path.join(OUTPUT_DIR, f"{name}_classification_report.txt")
+        save_classification_report(labels, preds, CLASS_NAMES, path=report_path)
+
+        # Save ROC and PR curves
+        plot_roc_pr_curves(labels, probs, CLASS_NAMES, save_dir=os.path.join(OUTPUT_DIR, f"{name}_curves"))
+
+        results[name] = acc
 
     print("\nRunning Optuna tuning...")
     study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=30)
