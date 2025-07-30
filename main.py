@@ -11,10 +11,10 @@ import torch
 import os
 
 def main():
-#    os.makedirs(OUTPUT_DIR, exist_ok=True)
-#    set_seed(SEED)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    set_seed(SEED)
 
-#    run_pipeline(DATA_DIR, OUTPUT_DIR, window_size=WINDOW_SIZE)
+    run_pipeline(DATA_DIR, OUTPUT_DIR, window_size=WINDOW_SIZE)
     train_loader, val_loader, test_loader, trainval_loader = get_dataloaders(OUTPUT_DIR, batch_size=BATCH_SIZE)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -29,33 +29,49 @@ def main():
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         criterion = torch.nn.CrossEntropyLoss()
 
-        model = train_model(model, train_loader, val_loader, optimizer, criterion, EPOCHS, device)
+        model, train_acc, val_acc, train_loss, val_loss = train_model(model, train_loader, val_loader, optimizer, criterion, EPOCHS, device)
         acc, preds, labels, probs = evaluate_model(model, test_loader, device, class_names=CLASS_NAMES)
         
         # Plot training curves
-        curve_path = os.path.join(OUTPUT_DIR, f"{name}_training_curves.png")
+        curve_path = os.path.join(PLOT_DIR, f"{name}_training_curves.png")
         plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=curve_path)
 
         # Save Confusion Matrix
-        cm_path = os.path.join(OUTPUT_DIR, f"{name}_confusion_matrix.png")
+        cm_path = os.path.join(PLOT_DIR, f"{name}_confusion_matrix.png")
         plot_confusion_matrix(labels, preds, CLASS_NAMES, title=f"{name} Confusion Matrix", save_path=cm_path)
 
         # Save Classification Report
-        report_path = os.path.join(OUTPUT_DIR, f"{name}_classification_report.txt")
+        report_path = os.path.join(PLOT_DIR, f"{name}_classification_report.txt")
         save_classification_report(labels, preds, CLASS_NAMES, path=report_path)
 
         # Save ROC and PR curves
-        plot_roc_pr_curves(labels, probs, CLASS_NAMES, save_dir=os.path.join(OUTPUT_DIR, f"{name}_curves"))
+        plot_roc_pr_curves(labels, probs, CLASS_NAMES, save_dir=os.path.join(PLOT_DIR, f"{name}_curves"))
 
         results[name] = acc
 
     print("\nRunning Optuna tuning...")
     study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=30)
-    best_model = save_best_trial_model(study, trainval_loader, save_path=MODEL_SAVE_PATH, device=device)
+    best_model, train_acc, train_loss = save_best_trial_model(study, trainval_loader, save_path=MODEL_SAVE_PATH, device=device)
 
-    print("\nFinal Evaluation on Test Set:")
-    acc, preds, labels = evaluate_model(best_model, test_loader, device, CLASS_NAMES)
-    plot_confusion_matrix(labels, preds, CLASS_NAMES, title="Optuna-Tuned ECGCNN")
+    # Plot training curves
+    plot_training_curves(train_acc, val_acc=None, train_loss=train_loss, val_loss=None,
+                         save_path=os.path.join(PLOT_DIR, "Optuna_ECGCNN_training_curves.png"))
+
+    print("\nFinal Evaluation on Test Set (Optuna-Tuned ECGCNN):")
+    acc, preds, labels, probs = evaluate_model(best_model, test_loader, device, CLASS_NAMES)
+
+    # Save Confusion Matrix
+    cm_path = os.path.join(PLOT_DIR, "Optuna_ECGCNN_confusion_matrix.png")
+    plot_confusion_matrix(labels, preds, CLASS_NAMES, title="Optuna-Tuned ECGCNN", save_path=cm_path)
+
+    # Save Classification Report
+    report_path = os.path.join(PLOT_DIR, "Optuna_ECGCNN_classification_report.txt")
+    save_classification_report(labels, preds, CLASS_NAMES, path=report_path)
+
+    # Save ROC and PR curves
+    curves_dir = os.path.join(PLOT_DIR, "Optuna_ECGCNN_curves")
+    plot_roc_pr_curves(labels, probs, CLASS_NAMES, save_dir=curves_dir)
+
     results["Optuna_ECGCNN"] = acc
 
     print("\n=== Final Accuracy Summary ===")

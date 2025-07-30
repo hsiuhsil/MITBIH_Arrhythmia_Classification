@@ -21,11 +21,11 @@ def plot_confusion_matrix(y_true, y_pred, class_names=CLASS_NAMES, title="Confus
     disp2.plot(cmap="viridis", values_format=".1f", ax=axs[1], colorbar=True)
     axs[1].set_title("Percentage")
 
-    plt.tight_layout()
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95]) 
     
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path, dpi=300)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close(fig)
     else:
         plt.show()
@@ -53,7 +53,8 @@ def plot_roc_pr_curves(y_true, probs, class_names, save_dir):
         plt.ylabel("True Positive Rate")
         plt.title(f"ROC Curve - {class_name}")
         plt.legend()
-        plt.savefig(os.path.join(save_dir, f"roc_{class_name}.png"))
+        plt.grid()
+        plt.savefig(os.path.join(save_dir, f"roc_{class_name}.png"), dpi=300, bbox_inches='tight')
         plt.close()
 
         # PR
@@ -62,7 +63,8 @@ def plot_roc_pr_curves(y_true, probs, class_names, save_dir):
         plt.xlabel("Recall")
         plt.ylabel("Precision")
         plt.title(f"Precision-Recall - {class_name}")
-        plt.savefig(os.path.join(save_dir, f"pr_{class_name}.png"))
+        plt.grid()
+        plt.savefig(os.path.join(save_dir, f"pr_{class_name}.png"), dpi=300, bbox_inches='tight')
         plt.close()
 
 def plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=None):
@@ -77,6 +79,7 @@ def plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=Non
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
+    plt.grid()
 
     # Loss
     plt.subplot(1, 2, 2)
@@ -86,10 +89,11 @@ def plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=Non
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
+    plt.grid()
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Saved training curves to {save_path}")
         plt.close()
     else:

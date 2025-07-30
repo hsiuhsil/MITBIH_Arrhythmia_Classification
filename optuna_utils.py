@@ -98,7 +98,7 @@ def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
     return study
 
 def save_best_trial_model(study, trainval_loader, save_path="results/best_model.pth", device="cpu"):
-    """ save the best trial model """
+    """Save the best trial model and return training curves."""
     best_params = study.best_trial.params
 
     best_model_params = {
@@ -116,25 +116,47 @@ def save_best_trial_model(study, trainval_loader, save_path="results/best_model.
         "lr": best_params['lr'],
         "weight_decay": best_params['weight_decay']
     }
-    
 
     model = ECGCNN(**best_model_params).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=best_optimizer_params["lr"], weight_decay=best_optimizer_params["weight_decay"])
     criterion = nn.CrossEntropyLoss()
 
+    # Initialize tracking
+    train_loss_list = []
+    train_acc_list = []
+
     for epoch in range(30):
         model.train()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
         for X_batch, y_batch in trainval_loader:
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+
             optimizer.zero_grad()
-            loss = criterion(model(X_batch), y_batch)
+            outputs = model(X_batch)
+            loss = criterion(outputs, y_batch)
             loss.backward()
             optimizer.step()
-        print(f"Epoch {epoch+1}/30 complete")
+
+            running_loss += loss.item() * X_batch.size(0)
+            _, predicted = torch.max(outputs, 1)
+            correct += (predicted == y_batch).sum().item()
+            total += y_batch.size(0)
+
+        epoch_loss = running_loss / total
+        epoch_acc = correct / total
+
+        train_loss_list.append(epoch_loss)
+        train_acc_list.append(epoch_acc)
+
+        print(f"Epoch {epoch+1}/30 - Loss: {epoch_loss:.4f} - Acc: {epoch_acc:.4f}")
 
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
-    return model
+
+    return model, train_acc_list, train_loss_list
 
 def save_study(study, path):
     """ save the study"""
