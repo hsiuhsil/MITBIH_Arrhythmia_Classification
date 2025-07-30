@@ -7,8 +7,9 @@ from metrics import plot_training_curves, plot_confusion_matrix, save_classifica
 from optuna_utils import get_or_run_study, save_best_trial_model
 from utils import set_seed
 
-import torch
 import os
+import torch
+import time
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -29,7 +30,12 @@ def main():
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         criterion = torch.nn.CrossEntropyLoss()
 
+        start_time = time.time()
         model, train_acc, val_acc, train_loss, val_loss = train_model(model, train_loader, val_loader, optimizer, criterion, EPOCHS, device)
+        end_time = time.time()
+        elapsed = end_time - start_time
+        print(f"{name} training time: {elapsed:.2f} seconds")
+
         acc, preds, labels, probs = evaluate_model(model, test_loader, device, class_names=CLASS_NAMES)
         
         # Plot training curves

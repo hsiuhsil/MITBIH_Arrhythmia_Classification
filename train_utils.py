@@ -4,11 +4,15 @@ from sklearn.preprocessing import label_binarize
 
 """define the utilities during the training """
 
-def train_model(model, train_loader, val_loader, optimizer, criterion, epochs=20, device='cpu'):
-    """define the training processes"""
+def train_model(model, train_loader, val_loader, optimizer, criterion, epochs=20, device='cpu', early_stopping_patience=5):
+    """define the training processes with early stopping"""
     model.to(device)
     train_losses, val_losses = [], []
     train_accs, val_accs = [], []
+
+    best_val_loss = float('inf')
+    patience_counter = 0
+    best_model_state = None
 
     for epoch in range(epochs):
         model.train()
@@ -50,6 +54,21 @@ def train_model(model, train_loader, val_loader, optimizer, criterion, epochs=20
         val_accs.append(val_acc)
 
         print(f"Epoch {epoch+1}/{epochs} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | Val Acc: {val_acc:.4f}")
+
+        # Early stopping
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            best_model_state = model.state_dict()
+        else:
+            patience_counter += 1
+            if patience_counter >= early_stopping_patience:
+                print(f"Early stopping at epoch {epoch+1}")
+                break
+
+    # Load best model weights
+    if best_model_state is not None:
+        model.load_state_dict(best_model_state)
 
     return model, train_accs, val_accs, train_losses, val_losses
 

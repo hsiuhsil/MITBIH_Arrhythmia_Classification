@@ -4,7 +4,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from config import OUTPUT_DIR, CLASS_NAMES, DEMO_PATH, MODEL_SAVE_PATH, DEVICE
+from config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES, DEMO_PATH, MODEL_SAVE_PATH, DEVICE
 from predict import load_model_and_predict
 from model_definitions import ECGCNN
 
@@ -84,7 +84,7 @@ def plot_ecg_predictions(X, y_true, y_pred, save_path=None):
     plt.tight_layout()
 
     if save_path:
-        plt.savefig(save_path, dpi=300)
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
     else:
         plt.show()
 
@@ -101,7 +101,8 @@ def main():
     pred_classes = load_model_and_predict(X, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
     
     # Step 4: Plot
-    plot_ecg_predictions(X, true_classes, pred_classes, save_path=None)
+    save_demo_path = curve_path = os.path.join(PLOT_DIR, "demo.png")
+    plot_ecg_predictions(X, true_classes, pred_classes, save_path=save_demo_path)
 
 if __name__ == "__main__":
     main()
