@@ -2,42 +2,64 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
-from tsaug import TimeWrap, Drift, AddNoise
+from augmenter import get_ecg_augmenter
 from config import *
+from collections import Counter
 
 """define the dataloaders"""
 
 class ECGDataset(Dataset):
-    def __init__(self, file_path, augment=False):
+    def __init__(self, file_path, augment=False, target_size_per_class=6000):
         data = np.load(file_path)
         self.X = data['X']
         self.y = data['y']
         self.augment = augment
 
         if self.augment:
-            # Define the augmentation pipeline
-            self.augmenter = (
-                TimeWarp(n_speed_change=3, max_speed_ratio=2) * 0.5
-                + Drift(max_drift=(0.05, 0.1), n_drift_points=5) * 0.5
-                + AddNoise(scale=0.05)
-            )
+            # Count original class distribution
+            label_counts = Counter(self.y)
+            self.X_aug = []
+            self.y_aug = []
+
+            self.augmenter = get_ecg_augmenter()
+
+            for cls in np.unique(self.y):
+                cls_indices = np.where(self.y == cls)[0]
+                X_cls = self.X[cls_indices]
+                y_cls = self.y[cls_indices]
+
+                self.X_aug.extend(X_cls)
+                self.y_aug.extend(y_cls)
+
+                if label_counts[cls] < target_size_per_class:
+                    num_needed = target_size_per_class - label_counts[cls]
+                    # If too few, repeat samples before augmentation
+                    reps = int(np.ceil(num_needed / len(X_cls)))
+                    X_repeat = np.tile(X_cls, (reps, 1))[:num_needed]
+
+                    X_augmented = self.augmenter.augment(X_repeat)
+                    self.X_aug.extend(X_augmented)
+                    self.y_aug.extend([cls] * len(X_augmented))
+
+            self.X_aug = np.array(self.X_aug)
+            self.y_aug = np.array(self.y_aug)
+
+        else:
+            self.X_aug = self.X
+            self.y_aug = self.y
 
     def __len__(self):
-        return len(self.y)
+        return len(self.y_aug)
 
     def __getitem__(self, idx):
-        x = self.X[idx]
-        y = self.y[idx]
-
-        if self.augment:
-            x = self.augmenter.augment(x[np.newaxis, :])[0]
-
+        x = self.X_aug[idx]
+        y = self.y_aug[idx]
         x = torch.tensor(x, dtype=torch.float32).unsqueeze(0)  # shape: [1, 260]
         y = torch.tensor(y, dtype=torch.long)
         return x, y
 
 def get_dataloaders(data_dir=DATA_DIR, batch_size=64):
-    train_ds = ECGDataset(os.path.join(data_dir, "ecg_train.npz"), augment=True)  # Augment here
+    train_ds = ECGDataset(os.path.join(data_dir, "ecg_train.npz"), augment=True)
     val_ds   = ECGDataset(os.path.join(data_dir, "ecg_val.npz"))
     test_ds  = ECGDataset(os.path.join(data_dir, "ecg_test.npz"))
     trainval_ds = ConcatDataset([train_ds, val_ds])

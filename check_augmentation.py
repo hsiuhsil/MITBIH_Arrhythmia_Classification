@@ -1,12 +1,14 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from tsaug import TimeWarp, Drift, AddNoise
+from tsaug import TimeWarp, Drift, AddNoise, Pool
 from config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES
+from augmenter import get_ecg_augmenter
 
-samples_per_class = 3
-num_classes = len(CLASS_NAMES)
-total_samples = samples_per_class * num_classes
+SAMPLES_PER_CLASS = 3
+sample_rate = 360 #Hz
+NUM_CLASSES = len(CLASS_NAMES)
+TOTAL_SAMPLES = SAMPLES_PER_CLASS * NUM_CLASSES
 
 # Load original dataset
 data = np.load(os.path.join(OUTPUT_DIR, "ecg_train.npz"))
@@ -28,27 +30,39 @@ selected_X = np.vstack(selected_X)
 selected_y = np.array(selected_y)
 
 # ========== APPLY AUGMENTATION ==========
-augmenter = (
-    TimeWarp(n_speed_change=3, max_speed_ratio=2) * 0.5
-    + Drift(max_drift=(0.05, 0.1), n_drift_points=5) * 0.5
-    + AddNoise(scale=0.05)
-)
-
+augmenter = get_ecg_augmenter()
 augmented_X = augmenter.augment(selected_X)
 
-# ========== PLOT ==========
-fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(20, 6), sharex=True, sharey=True)
+num_samples = selected_X.shape[1]
+time = np.arange(num_samples) / sample_rate  # Time in seconds
+
+fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(12, 6), sharex=True, sharey=True)
 fig.suptitle("Original vs. Augmented ECG Samples (3 per class)", fontsize=16)
 
 for i, ax in enumerate(axs.flat):
-    ax.plot(selected_X[i], label="Original", color="blue")
-    ax.plot(augmented_X[i], label="Augmented", color="orange", alpha=0.7)
+    ax.plot(time, selected_X[i], label="Original", color="blue")
+    ax.plot(time, augmented_X[i], label="Augmented", color="orange", alpha=0.7)
     ax.set_title(f"Class {selected_y[i]}")
-    ax.set_xticks([])
-    ax.set_yticks([])
 
-axs[0, 0].legend(loc='upper right', fontsize=10)
+    # Show x-axis ticks and label only for bottom row
+    if i // 5 == 2:
+        ax.set_xlabel("Time (sec)")
+        ax.set_xticks(np.linspace(0, num_samples / sample_rate, 4))
+        ax.set_xticklabels([f"{x:.2f}" for x in np.linspace(0, num_samples / sample_rate, 4)])
+    else:
+        ax.set_xticks([])
+
+    # Show y-axis only for leftmost column
+    if i % 5 == 0:
+        ax.set_ylabel("Amplitude")
+    else:
+        ax.set_yticks([])
+
+    ax.grid(True)
+# Add legend to the top-left plot only
+axs[0, 0].legend(loc='upper right', fontsize=9)
+
 plt.tight_layout(rect=[0, 0, 1, 0.95])
-plt.savefig(os.path.join(PLOT_DIR,"augmented_comparison.png"))
-print(f"Saved visualization to {SAVE_PATH}")
+#plt.show()
+plt.savefig(os.path.join(PLOT_DIR, "augmented_comparison.png"), dpi=300, bbox_inches='tight')
 plt.close()

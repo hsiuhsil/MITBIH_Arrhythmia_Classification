@@ -19,6 +19,7 @@ AAMI_MAP = {
 CLASS_NAMES = ['N', 'S', 'V', 'F', 'Q']
 LABEL_MAP = {label: idx for idx, label in enumerate(CLASS_NAMES)}
 
+# Path
 DATA_DIR = "./data/physionet.org/files/mitdb/1.0.0"
 OUTPUT_DIR = "./temp"
 PLOT_DIR = "./figures"
