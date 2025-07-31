@@ -110,11 +110,11 @@ def run_optuna(augment=False):
     )
 
     # Run Optuna study
-    study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=1)
+    study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=30)
 
     # Save best model
     best_model, train_acc, train_loss = save_best_trial_model(
-        study, trainval_loader, num_epoches=2, save_path=MODEL_SAVE_PATH, device=DEVICE
+        study, trainval_loader, num_epoches=30, save_path=MODEL_SAVE_PATH, device=DEVICE
     )
 
     # Plot training curves
@@ -126,7 +126,7 @@ def run_optuna(augment=False):
     # Evaluate on test set
     print(f"\nFinal Evaluation on Test Set ({aug_tag}):")
     acc, preds, labels, probs = evaluate_model(
-        best_model, test_loader, device, CLASS_NAMES
+        best_model, test_loader, DEVICE, CLASS_NAMES
     )
 
     # Save confusion matrix and classification report

@@ -74,7 +74,8 @@ def plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=Non
     # Accuracy
     plt.subplot(1, 2, 1)
     plt.plot(epochs, train_acc, label='Train Acc')
-    plt.plot(epochs, val_acc, label='Val Acc')
+    if val_loss is not None:
+        plt.plot(epochs, val_acc, label='Val Acc')
     plt.title('Accuracy over Epochs')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -84,7 +85,8 @@ def plot_training_curves(train_acc, val_acc, train_loss, val_loss, save_path=Non
     # Loss
     plt.subplot(1, 2, 2)
     plt.plot(epochs, train_loss, label='Train Loss')
-    plt.plot(epochs, val_loss, label='Val Loss')
+    if val_loss is not None:
+        plt.plot(epochs, val_loss, label='Val Loss')
     plt.title('Loss over Epochs')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
