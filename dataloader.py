@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import torch
+from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from augmenter import get_ecg_augmenter
 from config import *
@@ -58,8 +59,8 @@ class ECGDataset(Dataset):
         y = torch.tensor(y, dtype=torch.long)
         return x, y
 
-def get_dataloaders(data_dir=DATA_DIR, batch_size=64):
-    train_ds = ECGDataset(os.path.join(data_dir, "ecg_train.npz"), augment=True)
+def get_dataloaders(data_dir=DATA_DIR, batch_size=64, augment=False):
+    train_ds = ECGDataset(os.path.join(data_dir, "ecg_train.npz"), augment=augment)
     val_ds   = ECGDataset(os.path.join(data_dir, "ecg_val.npz"))
     test_ds  = ECGDataset(os.path.join(data_dir, "ecg_test.npz"))
     trainval_ds = ConcatDataset([train_ds, val_ds])
