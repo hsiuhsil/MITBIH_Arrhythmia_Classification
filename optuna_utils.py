@@ -8,23 +8,24 @@ from collections import Counter
 
 """ define the utility during the optimization with optuna """
 
-def compute_class_weights(loader, device, alpha=1.0):
-    """Compute and scale class weights from the dataset"""
+def compute_soft_class_weights(loader, device, alpha=0.5):
+    """Compute and soften class weights"""
     label_counts = Counter()
     for _, labels in loader:
         label_counts.update(labels.numpy().tolist())
 
     total = sum(label_counts.values())
     num_classes = len(label_counts)
-    class_weights = []
+    raw_weights = []
     for i in range(num_classes):
-        class_count = label_counts.get(i, 1)
-        weight = total / (num_classes * class_count)
-        class_weights.append(weight)
+        count = label_counts.get(i, 1)
+        raw_weights.append(total / (num_classes * count))
 
-    class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
-    scaled_weights = alpha * class_weights  # scale by alpha
-    return scaled_weights
+    raw_weights = torch.tensor(raw_weights, dtype=torch.float32).to(device)
+
+    # Soften the weights: interpolate between 1 and the weight
+    soft_weights = (1 - alpha) * torch.ones_like(raw_weights) + alpha * raw_weights
+    return soft_weights
 
 def optuna_objective(trial, train_loader, val_loader, device="cpu"):
     """ the objectives of the optimization process with optuna""" 
@@ -45,15 +46,14 @@ def optuna_objective(trial, train_loader, val_loader, device="cpu"):
         "lr": trial.suggest_float("lr", 1e-4, 1e-2, log=True),
         "weight_decay": trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
     }
-
-    alpha = trial.suggest_float("alpha", 0.0, 1.0)
-    
+ 
     # model setup
     model = ECGCNN(**model_params).to(device)
     optimizer = torch.optim.Adam(model.parameters(), **optimizer_params)
 
     # class weights
-    class_weights = compute_class_weights(train_loader, device, alpha=alpha)
+    alpha = trial.suggest_float("class_weight_alpha", 0.0, 1.0)
+    class_weights = compute_soft_class_weights(train_loader, device, alpha=alpha)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # training loop
