@@ -1,6 +1,8 @@
+import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, classification_report, roc_curve, auc, precision_recall_curve
 from sklearn.preprocessing import label_binarize
+from sklearn.utils.class_weight import compute_class_weight
 
 """define the utilities during the training """
 
@@ -101,3 +103,11 @@ def load_model(model_class, path, device='cpu'):
     model.load_state_dict(torch.load(path, map_location=device))
     model.eval()
     return model
+
+def get_class_weights(labels, num_classes):
+    class_weights = compute_class_weight(
+        class_weight='balanced',
+        classes=np.arange(num_classes),
+        y=labels
+    )
+    return torch.tensor(class_weights, dtype=torch.float)

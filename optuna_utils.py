@@ -8,6 +8,24 @@ from config import *
 
 """ define the utility during the optimization with optuna """
 
+def compute_class_weights(loader, device, alpha=1.0):
+    """Compute and scale class weights from the dataset"""
+    label_counts = Counter()
+    for _, labels in loader:
+        label_counts.update(labels.numpy().tolist())
+
+    total = sum(label_counts.values())
+    num_classes = len(label_counts)
+    class_weights = []
+    for i in range(num_classes):
+        class_count = label_counts.get(i, 1)
+        weight = total / (num_classes * class_count)
+        class_weights.append(weight)
+
+    class_weights = torch.tensor(class_weights, dtype=torch.float32).to(device)
+    scaled_weights = alpha * class_weights  # scale by alpha
+    return scaled_weights
+
 def optuna_objective(trial, train_loader, val_loader, device="cpu"):
     """ the objectives of the optimization process with optuna""" 
     # Suggested hyperparams
@@ -28,10 +46,17 @@ def optuna_objective(trial, train_loader, val_loader, device="cpu"):
         "weight_decay": trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
     }
 
+    alpha = trial.suggest_float("alpha", 0.0, 1.0)
+    
+    # model setup
     model = ECGCNN(**model_params).to(device)
     optimizer = torch.optim.Adam(model.parameters(), **optimizer_params)
-    criterion = nn.CrossEntropyLoss()
 
+    # class weights
+    class_weights = compute_class_weights(train_loader, device, alpha=alpha)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+
+    # training loop
     trial_number = trial.number
     short_mode = trial_number < 5
     num_epochs = 10 if short_mode else 25

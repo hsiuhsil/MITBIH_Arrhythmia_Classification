@@ -18,6 +18,7 @@ AAMI_MAP = {
     '/': 'Q', 'f': 'Q', 'Q': 'Q'
 }
 CLASS_NAMES = ['N', 'S', 'V', 'F', 'Q']
+NUM_CLASSES = len(CLASS_NAMES)
 LABEL_MAP = {label: idx for idx, label in enumerate(CLASS_NAMES)}
 
 # Path

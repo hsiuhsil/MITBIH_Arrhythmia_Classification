@@ -2,13 +2,14 @@ from config import *
 from preprocessing import run_pipeline
 from dataloader import get_dataloaders
 from model_definitions import AcharyaCNN, ECGCNN, iTransformer
-from train_utils import train_model, evaluate_model
+from train_utils import train_model, evaluate_model, get_class_weights
 from metrics import plot_training_curves, plot_confusion_matrix, save_classification_report, plot_roc_pr_curves
 from optuna_utils import get_or_run_study, save_best_trial_model
 from utils import set_seed, export_results_json
 
 import os
 import torch
+import torch.nn as nn
 import time
 import json
 
@@ -24,11 +25,25 @@ def train_and_evaluate(augment: bool, plot_subdir: str):
     models = [("AcharyaCNN", AcharyaCNN), ("ECGCNN", ECGCNN), ("iTransformer", iTransformer)]
     results = {}
 
+    # Extract labels from train_loader
+    all_labels = []
+    for _, labels in train_loader:
+        all_labels.extend(labels.numpy())
+    
+    class_weights = get_class_weights(all_labels, NUM_CLASSES).to(device)
+    # Soften the weights:
+    alpha = 0.5  # tune this between 0 (no weighting) and 1 (full weights)
+    soft_weights = (1 - alpha) * torch.ones_like(class_weights) + alpha * class_weights
+    print(f"Softened class weights: {soft_weights}")
+    if alpha == 0:
+        criterion = nn.CrossEntropyLoss()
+    else:
+        criterion = nn.CrossEntropyLoss(weight=soft_weights.to(device))
+
     for name, model_cls in models:
         print(f"\nTraining {name} {'with' if augment else 'without'} augmentation...")
         model = model_cls().to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-        criterion = torch.nn.CrossEntropyLoss()
 
         start_time = time.time()
         model, train_acc, val_acc, train_loss, val_loss = train_model(

@@ -72,3 +72,17 @@ def get_dataloaders(data_dir=DATA_DIR, batch_size=64, augment=False):
 
     return train_loader, val_loader, test_loader, trainval_loader
 
+def get_cv_dataloaders(data_path, batch_size=64, n_splits=5, augment=False, seed=42):
+    features_np, labels_np = extract_features_labels_numpy(data_path)
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+
+    folds = []
+    for train_idx, val_idx in skf.split(features_np, labels_np):
+        train_dataset = ECGDataset(features_np[train_idx], labels_np[train_idx], augment=augment)
+        val_dataset = ECGDataset(features_np[val_idx], labels_np[val_idx], augment=False)
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+        folds.append((train_loader, val_loader))
+
+    return folds

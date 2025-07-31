@@ -101,3 +101,10 @@ def run_pipeline(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, aami_map=AAMI_MAP, la
     # Preprocess & split
     train, val, test = preprocess_and_split(X_raw, y)
     save_npz_datasets(output_dir, [train, val, test])
+
+def extract_features_labels_numpy(data_dir):
+    features_path = os.path.join(data_dir, "features.npy")
+    labels_path = os.path.join(data_dir, "labels.npy")
+    features = np.load(features_path)
+    labels = np.load(labels_path)
+    return features, labels
