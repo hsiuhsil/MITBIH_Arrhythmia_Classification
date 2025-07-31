@@ -109,16 +109,13 @@ def run_optuna(augment=False):
         OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment
     )
 
-    # Study path
-    study_path = os.path.join(STUDY_PATH, f"study_{aug_tag}.pkl")
-
     # Run Optuna study
-    study = get_or_run_study(study_path, train_loader, val_loader, n_trials=30)
+    study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=1)
 
     # Save best model
     model_save_path = os.path.join(MODEL_SAVE_PATH, f"best_model_{aug_tag}.pt")
     best_model, train_acc, train_loss = save_best_trial_model(
-        study, trainval_loader, save_path=model_save_path, device=device
+        study, trainval_loader, save_path=model_save_path, device=DEVICE
     )
 
     # Plot training curves
@@ -157,8 +154,7 @@ if __name__ == "__main__":
     
     if USE_OPTUNA:
         results={}
-        for augment in [False, True]:
-            run_optuna(augment=augment)
+        run_optuna(augment=True)
         
         # Print and export final results
         print("\n=== Combined Final Accuracy Summary ===")

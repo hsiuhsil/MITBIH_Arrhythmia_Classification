@@ -7,7 +7,7 @@ BATCH_SIZE = 64
 WINDOW_SIZE = 130
 EPOCHS = 20
 DEVICE = 'cpu'
-USE_OPTUNA = False
+USE_OPTUNA = True
 
 # Class mappings
 AAMI_MAP = {
