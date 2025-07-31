@@ -122,7 +122,7 @@ def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
         print(f"Study saved to: {study_path}")
     return study
 
-def save_best_trial_model(study, trainval_loader, save_path="results/best_model.pth", device="cpu"):
+def save_best_trial_model(study, trainval_loader, num_epoches=30, save_path="results/best_model.pth", device="cpu"):
     """Save the best trial model and return training curves."""
     best_params = study.best_trial.params
 
@@ -150,7 +150,7 @@ def save_best_trial_model(study, trainval_loader, save_path="results/best_model.
     train_loss_list = []
     train_acc_list = []
 
-    for epoch in range(30):
+    for epoch in range(num_epoches):
         model.train()
         running_loss = 0.0
         correct = 0

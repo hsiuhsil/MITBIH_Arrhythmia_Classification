@@ -113,9 +113,8 @@ def run_optuna(augment=False):
     study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=1)
 
     # Save best model
-    model_save_path = os.path.join(MODEL_SAVE_PATH, f"best_model_{aug_tag}.pt")
     best_model, train_acc, train_loss = save_best_trial_model(
-        study, trainval_loader, save_path=model_save_path, device=DEVICE
+        study, trainval_loader, num_epoches=2, save_path=MODEL_SAVE_PATH, device=DEVICE
     )
 
     # Plot training curves
