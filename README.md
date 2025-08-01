@@ -1,32 +1,35 @@
-# MIT-BIH Arrhythmia Classification 🔬🫀
+# MIT-BIH Arrhythmia Classification 
 
-This project implements deep learning models to classify heartbeats in the MIT-BIH Arrhythmia dataset. It includes full preprocessing, data augmentation, and evaluation using cross-validation. It also supports hyperparameter tuning using Optuna.
+This project implements deep learning models to classify heartbeats in the MIT-BIH Arrhythmia dataset. It includes full preprocessing, optional data augmentation, model training, hyperparameter tuning using Optuna, and evaluation with cross-validation. The models supported are CNN-based and transformer-based architectures.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
+```
 ├── main.py                # Main training and evaluation pipeline
-├── model_definitions.py  # CNN and Transformer model architectures
-├── train_utils.py        # Training utilities and loss functions
-├── optuna_utils.py        # Fine-tuning utilities
-├── preprocessing.py      # Data preprocessing and augmentation
-├── predict.py            # Script for predicting on new ECG data
-├── config.py             # Hyperparameters and paths
-├── utils.py                # Shared functions
-├── README.md             # This file
-└── /data                 # Processed and raw data
+├── model_definitions.py   # CNN and Transformer model architectures
+├── train_utils.py         # Training utilities and loss functions
+├── optuna_utils.py        # Hyperparameter tuning with Optuna
+├── preprocessing.py       # Data preprocessing and beat extraction
+├── predict.py             # Script for predicting new ECG beats
+├── run_demo.py            # Demo script: save sample beats, predict, and plot
+├── config.py              # Hyperparameters, dataset paths, and constants
+├── utils.py               # General utility functions (seed setting, exports)
+├── README.md              # This file
+└── /data                  # Raw and processed datasets
+```
 
 ---
 
-## 🚀 Models
+##  Models
 
 Implemented:
-- ✅ AcharyaCNN (baseline model from literature)
-- ✅ ECGCNN (custom enhanced CNN)
-- ✅ iTransformer (attention-based architecture)
+- AcharyaCNN (baseline model from literature)
+- ECGCNN (custom enhanced CNN)
+- iTransformer (attention-based architecture)
 
-Each model is evaluated using:
+Evaluation metrics include:
 - Accuracy
 - Confusion matrix
 - Per-class precision & recall
@@ -34,30 +37,30 @@ Each model is evaluated using:
 
 ---
 
-## 🏋️ Training Details
+##  Training Details
 
-- **Dataset:** MIT-BIH Arrhythmia Dataset (260-length segments)
-- **Input shape:** `(batch_size, 1, 1, 260)`
-- **Loss Function:** CrossEntropyLoss with optional class weighting
+- **Dataset:** MIT-BIH Arrhythmia Dataset (beats segmented into 260-sample windows)
+- **Input shape:** `(batch_size, 1, 260)` (single channel ECG beats)
+- **Loss Function:** CrossEntropyLoss with optional soft class weighting
 - **Optimizer:** Adam
-- **Data Augmentation:** Random rescaling + jitter (optional, configurable)
-- **Hyperparameter Tuning:** Optuna with dynamic model selection and parameter sweeps
+- **Data Augmentation:** Optional random rescaling and jitter on training beats
+- **Hyperparameter Tuning:** Optuna with search over learning rate, dropout, weight decay, and class weight smoothing
 
 ---
 
-## 📊 Results Summary
+##  Results Summary
 
 | Model         | Augmentation | Accuracy (mean ± std) |
 |---------------|--------------|------------------------|
-| AcharyaCNN    | No           |  XX.XX% ± X.XX         |
-| ECGCNN        | ✅ Yes       |  **YY.YY% ± Y.YY**      |
-| iTransformer  | ✅ Yes       |  ZZ.ZZ% ± Z.ZZ         |
+| AcharyaCNN    | Yes          |  XX.XX% ± X.XX         |
+| ECGCNN        | Yes          |  **YY.YY% ± Y.YY**     |
+| iTransformer  | Yes          |  ZZ.ZZ% ± Z.ZZ         |
 
-> 💡 *ECGCNN with augmentation currently shows the best overall performance.*
+>  *ECGCNN with augmentation currently shows the best overall performance.*
 
 ---
 
-## ⚙️ Usage
+## Usage
 
 ### 1. Install dependencies
 ```bash
@@ -71,35 +74,43 @@ python main.py
 
 ### 3. Run Optuna tuning
 ```bash
-TBD
+python -c "from optuna_utils import run_optuna_study; run_optuna_study(train_loader, val_loader, n_trials=30)"
 ```
 
 ### 4. Predict new data
 ```bash
-TBD
+python predict.py
+```
+
+### 5. Run demo visualization
+```bash
+python run_demo.py
 ```
 
 ---
 
-## 🧪 Hyperparameter Tuning (Optuna)
+## Hyperparameter Tuning (Optuna)
 
-Supported search space:
-- Learning rate
-- Dropout rate
-- Weight decay
-- Class weight alpha (softening)
+Search space includes:
+- Learning rate (lr)
+- Dropout rate (dropout)
+- Weight decay (weight_decay)
+- Class weight smoothing parameter (class_weight_alpha)
+- Number of convolution filters, kernel sizes, fully connected layer sizes, and use of third conv layer for the ECGCNN model
+
 
 ---
 
-## 📎 References
-- MIT-BIH Dataset
-- Acharya et al., “Deep CNN for ECG Classification”, 2017.
-- Optuna for efficient hyperparameter optimization 
+## References
+- [MIT-BIH Dataset](https://www.physionet.org/content/mitdb/1.0.0/)
+- [Acharya et al., “A deep convolutional neural network model to classify heartbeats”, 2017.](https://www.sciencedirect.com/science/article/abs/pii/S0010482517302810)
+- [Optuna: A hyperparameter optimization framework](https://optuna.readthedocs.io/en/stable/)
+- ChatGPT  was used to assist with code optimization and documentation.
 
 ---
 ##  Author
 
 Hsiu-Hsien (Leo) Lin
-Email: [hhlin.work@gmail.com]
-GitHub: [https://github.com/hsiuhsil]
-LinkedIn: [https://www.linkedin.com/in/hsiuhsil/]
+[hhlin.work@gmail.com](mailto:hhlin.work@gmail.com)
+[GitHub](https://github.com/hsiuhsil)
+[LinkedIn](https://www.linkedin.com/in/hsiuhsil/)
