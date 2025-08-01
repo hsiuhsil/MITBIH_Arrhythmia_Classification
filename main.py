@@ -63,10 +63,9 @@ def train_and_evaluate(augment: bool, plot_subdir: str, use_kfold: bool = False,
 
     if use_kfold:
         print(f"\nRunning {num_folds}-fold cross-validation...")
-        kfold_loaders = get_cross_validation_loaders(OUTPUT_DIR, k=num_folds, batch_size=BATCH_SIZE, augment=augment)
+        kfold_loaders = list(get_cross_validation_loaders(OUTPUT_DIR, k=num_folds, batch_size=BATCH_SIZE, augment=augment))
 
         for name, model_cls in models:
-            print(' ========  ==========  =========== Modeling of ', name)
             fold_accuracies = []
             for fold_id, train_loader, val_loader in kfold_loaders:
                 print(f"\n{name} - Fold {fold_id}/{num_folds}")
