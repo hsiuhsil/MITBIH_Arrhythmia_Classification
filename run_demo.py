@@ -1,4 +1,14 @@
-"""save beats into a npz for demo"""
+"""
+run_demo.py
+
+This script demonstrates loading a trained ECG classifier to:
+1. Generate a demo set of ECG beats from the training dataset.
+2. Run predictions on the demo beats.
+3. Plot and save the results with true and predicted labels.
+
+Dependencies:
+- Assumes a trained model and saved dataset exist in configured directories.
+"""
 import os
 import random
 import numpy as np
@@ -10,7 +20,13 @@ from model_definitions import ECGCNN
 
 def create_demo_npz(save_path=DEMO_PATH, num_per_class=3):
     """
-    Save some demo data (from the training dataset) to a .npz file.
+    Create and save a demo subset of ECG beats for visualization.
+
+    Selects a small number of samples from each class in the training set and saves them as an `.npz` file.
+
+    Args:
+        save_path (str): Path to save the demo `.npz` file.
+        num_per_class (int): Number of beats per class to include.
     """
     train = np.load(os.path.join(OUTPUT_DIR,"ecg_train.npz"))
     X, y = train["X"], train["y"]
@@ -37,7 +53,13 @@ def create_demo_npz(save_path=DEMO_PATH, num_per_class=3):
 
 def load_demo_data(npz_path=DEMO_PATH):
     """
-    Load demo data from .npz into a list of (label, beat) tuples.
+    Load ECG beat samples and corresponding labels from a demo `.npz` file.
+
+    Args:
+        npz_path (str): Path to the saved `.npz` file.
+
+    Returns:
+        Tuple[np.ndarray, List[str]]: ECG beats and their corresponding class names.
     """
     loaded = np.load(npz_path)
     X, y = loaded['X'], loaded['y']
@@ -48,15 +70,14 @@ def load_demo_data(npz_path=DEMO_PATH):
 
 def plot_ecg_predictions(X, y_true, y_pred, save_path=None):
     """
-    Plot ECG beats with true and predicted labels.
+    Plot ECG beat waveforms along with their true and predicted class labels.
 
     Args:
-        X: numpy array of shape (N, 260), one ECG beat per row.
-        y_true: list or array of true class names.
-        y_pred: list or array of predicted class names.
-        save_path: if provided, saves the plot to this path.
+        X (np.ndarray): Array of shape (N, 260), where each row is a beat.
+        y_true (List[str]): Ground truth class names.
+        y_pred (List[str]): Predicted class names.
+        save_path (str, optional): Path to save the plot image. If None, display instead.
     """
-
     num_samples = len(X)
     n_rows, n_cols = 3, 5
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, 6), sharex=True, sharey=True)
@@ -89,6 +110,12 @@ def plot_ecg_predictions(X, y_true, y_pred, save_path=None):
         plt.show()
 
 def main():
+    """
+    Main function to execute the demo pipeline:
+    1. Generate or load demo ECG beats.
+    2. Predict classes using a trained model.
+    3. Plot and save the prediction results.
+    """
     # Step 1: Load or create demo .npz
     if not os.path.exists(DEMO_PATH):
         create_demo_npz(DEMO_PATH)
