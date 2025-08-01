@@ -110,7 +110,7 @@ Search space includes:
 ---
 ##  Author
 
-Hsiu-Hsien (Leo) Lin
-[hhlin.work@gmail.com](mailto:hhlin.work@gmail.com)
-[GitHub](https://github.com/hsiuhsil)
-[LinkedIn](https://www.linkedin.com/in/hsiuhsil/)
+- **Hsiu-Hsien (Leo) Lin**
+- [hhlin.work@gmail.com](mailto:hhlin.work@gmail.com)
+- [GitHub](https://github.com/hsiuhsil)
+- [LinkedIn](https://www.linkedin.com/in/hsiuhsil/)
