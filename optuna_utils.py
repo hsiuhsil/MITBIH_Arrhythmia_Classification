@@ -1,3 +1,11 @@
+"""
+optuna_utils.py
+
+This module defines utility functions for hyperparameter optimization using Optuna
+to tune an ECG classification model (ECGCNN). It includes model objective definition,
+study management, and retraining the best model.
+"""
+
 import optuna
 import torch
 import torch.nn as nn
@@ -6,10 +14,18 @@ from model_definitions import ECGCNN
 from config import *
 from collections import Counter
 
-""" define the utility during the optimization with optuna """
-
 def compute_soft_class_weights(loader, device, alpha=0.5):
-    """Compute and soften class weights"""
+    """
+    Compute class weights with optional softening for imbalanced classification.
+
+    Args:
+        loader (DataLoader): DataLoader for computing class frequencies.
+        device (str): Device to send the weights ('cpu' or 'cuda').
+        alpha (float): Softening factor (0 = no weighting, 1 = full weighting).
+
+    Returns:
+        torch.Tensor: Softened class weights tensor on the specified device.
+    """
     label_counts = Counter()
     for _, labels in loader:
         label_counts.update(labels.numpy().tolist())
@@ -28,7 +44,18 @@ def compute_soft_class_weights(loader, device, alpha=0.5):
     return soft_weights
 
 def optuna_objective(trial, train_loader, val_loader, device="cpu"):
-    """ the objectives of the optimization process with optuna""" 
+    """
+    Objective function used by Optuna to optimize ECGCNN hyperparameters.
+
+    Args:
+        trial (optuna.trial.Trial): Current Optuna trial.
+        train_loader (DataLoader): Training data loader.
+        val_loader (DataLoader): Validation data loader.
+        device (str): Torch device.
+
+    Returns:
+        float: Validation error (1 - accuracy) to minimize.
+    """
     # Suggested hyperparams
 
     model_params = {
@@ -102,7 +129,17 @@ def optuna_objective(trial, train_loader, val_loader, device="cpu"):
     return 1.0 - best_acc  # minimize error
 
 def run_optuna_study(train_loader, val_loader, n_trials=30):
-    """ running the optuna study """
+    """
+    Run an Optuna hyperparameter optimization study.
+
+    Args:
+        train_loader (DataLoader): Training set loader.
+        val_loader (DataLoader): Validation set loader.
+        n_trials (int): Number of optimization trials.
+
+    Returns:
+        optuna.Study: Completed Optuna study object.
+    """
     pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=3)
     
     study = optuna.create_study(direction="minimize", pruner=pruner)
@@ -111,7 +148,18 @@ def run_optuna_study(train_loader, val_loader, n_trials=30):
     return study
 
 def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
-    """Load an existing Optuna study if available; otherwise, run and save a new one."""
+    """
+    Load a saved Optuna study if available; otherwise run a new study and save it.
+
+    Args:
+        study_path (str): File path to save or load the Optuna study.
+        train_loader (DataLoader): Training data.
+        val_loader (DataLoader): Validation data.
+        n_trials (int): Number of trials if creating a new study.
+
+    Returns:
+        optuna.Study: Loaded or newly created Optuna study.
+    """
     if os.path.exists(study_path):
         print(f"Loading existing Optuna study from: {study_path}")
         study = load_study(study_path)
@@ -123,8 +171,19 @@ def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
     return study
 
 def save_best_trial_model(params_or_study, trainval_loader, num_epoches=30, save_path="results/best_model.pth", device="cpu"):
-    """Save the best trial model and return training curves."""
+    """
+    Retrain the model using the best parameters and save it.
 
+    Args:
+        params_or_study (dict or optuna.Study): Best trial parameters or Optuna study object.
+        trainval_loader (DataLoader): Combined training and validation data.
+        num_epoches (int): Number of training epochs.
+        save_path (str): Path to save the trained model.
+        device (str): Device for training.
+
+    Returns:
+        Tuple: (trained model, list of train accuracies, list of train losses)
+    """
     if isinstance(params_or_study, dict):
         best_params = params_or_study
     else:
@@ -188,9 +247,23 @@ def save_best_trial_model(params_or_study, trainval_loader, num_epoches=30, save
     return model, train_acc_list, train_loss_list
 
 def save_study(study, path):
-    """ save the study"""
+    """
+    Save an Optuna study object to disk.
+
+    Args:
+        study (optuna.Study): The study object to save.
+        path (str): Destination file path.
+    """
     joblib.dump(study, path)
 
 def load_study(path):
-    """ load the study"""
+    """
+    Load an Optuna study object from disk.
+
+    Args:
+        path (str): Path to the saved study.
+
+    Returns:
+        optuna.Study: Loaded Optuna study.
+    """
     return joblib.load(path)

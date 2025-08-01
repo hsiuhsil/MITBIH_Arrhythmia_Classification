@@ -1,3 +1,12 @@
+"""
+preprocess.py
+
+This module provides utilities for:
+- Extracting ECG beats from MIT-BIH arrhythmia records.
+- Preprocessing signals using Savitzky–Golay filtering and Z-score normalization.
+- Splitting the dataset into train, validation, and test sets.
+- Saving processed datasets to disk in `.npz` format.
+"""
 import os
 from collections import defaultdict
 import numpy as np
@@ -6,10 +15,19 @@ import wfdb
 from sklearn.model_selection import train_test_split
 from config import *
 
-"""define functions for preprocessing"""
-
 def extract_beats_from_record(rec_path, aami_map, label_map, window_size=130):
-    """extract beats from the raw data """
+    """
+    Extract R-peak-centered ECG segments and labels from a single MIT-BIH record.
+
+    Args:
+        rec_path (str): Path to the WFDB record (excluding extension).
+        aami_map (dict): Mapping from annotation symbols to AAMI class labels.
+        label_map (dict): Mapping from AAMI class labels to integer indices.
+        window_size (int): Half-length of the segment (total = 2 * window_size).
+
+    Returns:
+        Tuple[List[np.ndarray], List[int]]: Extracted ECG beat segments and label indices.
+    """
     try:
         record = wfdb.rdrecord(rec_path)
         annotation = wfdb.rdann(rec_path, 'atr')
@@ -44,7 +62,20 @@ def extract_beats_from_record(rec_path, aami_map, label_map, window_size=130):
         return [], []
 
 def process_all_records(records, data_dir=DATA_DIR, aami_map=AAMI_MAP, label_map=LABEL_MAP, window_size=WINDOW_SIZE, class_names=CLASS_NAMES):
-    """get all beats from the raw data"""
+    """
+    Process all specified ECG records to extract beats and class distributions.
+
+    Args:
+        records (List[str]): List of record IDs to process (e.g., ["100", "101"]).
+        data_dir (str): Directory containing the WFDB record files.
+        aami_map (dict): Mapping from annotation symbols to AAMI labels.
+        label_map (dict): Mapping from AAMI labels to numeric indices.
+        window_size (int): Half-length of extracted beat segment.
+        class_names (List[str]): Ordered list of class names.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, Dict[str, int]]: All beat data, labels, and class count.
+    """
     all_X, all_y = [], []
     class_counts = defaultdict(int)
 
@@ -63,7 +94,21 @@ def process_all_records(records, data_dir=DATA_DIR, aami_map=AAMI_MAP, label_map
 # Preprocessing and Splitting
 
 def preprocess_and_split(X_raw, y, train_size=0.7, val_size=0.2, test_size=0.1, seed=42):
-    """Using the Z-score to normalize the beats, then splitting into train, val, and test dataseets"""
+    """
+    Apply signal smoothing and normalization, then split into train/val/test sets.
+
+    Args:
+        X_raw (np.ndarray): Raw ECG segments.
+        y (np.ndarray): Corresponding label indices.
+        train_size (float): Proportion of training data.
+        val_size (float): Proportion of validation data.
+        test_size (float): Proportion of test data.
+        seed (int): Random seed for reproducibility.
+
+    Returns:
+        Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+            (X_train, y_train), (X_val, y_val), (X_test, y_test)
+    """
     def preprocess_beat(beat):
         smoothed = scipy.signal.savgol_filter(beat, window_length=11, polyorder=3)
         return (smoothed - np.mean(smoothed)) / np.std(smoothed)
@@ -76,7 +121,13 @@ def preprocess_and_split(X_raw, y, train_size=0.7, val_size=0.2, test_size=0.1, 
     return (X_train, y_train), (X_val, y_val), (X_test, y_test)
 
 def save_npz_datasets(save_dir, splits):
-    """save the datasets into npz files"""
+    """
+    Save the train, validation, and test datasets as compressed .npz files.
+
+    Args:
+        save_dir (str): Directory to save the files.
+        splits (List[Tuple[np.ndarray, np.ndarray]]): List of (X, y) tuples for train/val/test.
+    """
     split_names = ['train', 'val', 'test']
     os.makedirs(save_dir, exist_ok=True)
     for name, (X, y) in zip(split_names, splits):
@@ -84,7 +135,17 @@ def save_npz_datasets(save_dir, splits):
         print(f"Saved {name}: {X.shape}")
 
 def run_pipeline(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, aami_map=AAMI_MAP, label_map=LABEL_MAP, window_size=WINDOW_SIZE, class_names=CLASS_NAMES):
-    """define the preprocess pipeline"""
+    """
+    Full preprocessing pipeline to extract, normalize, split, and save ECG beat data.
+
+    Args:
+        data_dir (str): Path to raw WFDB data.
+        output_dir (str): Directory to save processed data.
+        aami_map (dict): Symbol-to-label mapping.
+        label_map (dict): Label-to-index mapping.
+        window_size (int): Half-beat segment length.
+        class_names (List[str]): Class names for reporting.
+    """
     # Get all records
     records = [f"{i:03d}" for i in range(100, 235) if os.path.exists(os.path.join(data_dir, f"{i:03d}.dat"))]
 
@@ -103,6 +164,15 @@ def run_pipeline(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, aami_map=AAMI_MAP, la
     save_npz_datasets(output_dir, [train, val, test])
 
 def extract_features_labels_numpy(data_dir):
+    """
+    Load pre-saved features and labels from .npy files.
+
+    Args:
+        data_dir (str): Directory containing features.npy and labels.npy.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Features and labels arrays.
+    """
     features_path = os.path.join(data_dir, "features.npy")
     labels_path = os.path.join(data_dir, "labels.npy")
     features = np.load(features_path)

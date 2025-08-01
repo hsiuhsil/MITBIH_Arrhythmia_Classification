@@ -1,4 +1,12 @@
-"""to predict the class of the heartbeat"""
+"""
+predict.py
+
+This script defines utilities to load a trained ECG classification model 
+and make predictions on one or multiple ECG heartbeats.
+
+Supports loading Optuna-optimized ECGCNN model and mapping predicted indices 
+back to human-readable AAMI classes.
+"""
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -8,15 +16,15 @@ from config import DEVICE, MODEL_SAVE_PATH, STUDY_PATH, LABEL_MAP, CLASS_NAMES
 
 def predict_all_beats(beats, model, device):
     """
-    Predict the class of a single ECG beat using the trained model.
+    Predict the AAMI class of each ECG beat in the input batch using a trained model.
 
     Args:
-        beats (torch.Tensor): Tensor of shape [# of beats, 1, 260 samples/beat]..
-        model (torch.nn.Module): Trained model.
-        device (torch.device): CPU or CUDA device.
+        beats (torch.Tensor): Tensor of shape [N, 1, 260] representing N ECG beats.
+        model (torch.nn.Module): Trained ECG classification model.
+        device (torch.device): Device to perform inference on ('cpu' or 'cuda').
 
     Returns:
-        int: Predicted class index.
+        List[str]: List of predicted class labels (e.g., ['N', 'V', 'S']).
     """
     model.eval()
     beats = beats.to(device).float()
@@ -30,18 +38,17 @@ def predict_all_beats(beats, model, device):
 
 def load_model_and_predict(beat_array, model_class, model_path=MODEL_SAVE_PATH, device=DEVICE):
     """
-    Load the model and predict a single beat.
+    Load the trained model (with best Optuna parameters) and predict labels for ECG beats.
 
     Args:
-        model_class (torch.nn.Module): Class definition of the model.
-        model_path (str): Path to the saved model .pt file.
-        beat_array: a numpy array in (# of beats, 260 samples/beat)
-        device (torch.device): Device to load the model on.
+        beat_array (np.ndarray): Array of shape [N, 260] representing N ECG beats.
+        model_class (type): Model class to instantiate (e.g., ECGCNN).
+        model_path (str): Path to the saved model weights (.pth file).
+        device (str or torch.device): Device to run the model on ('cpu' or 'cuda').
 
     Returns:
-        int: Predicted class index.
+        List[str]: Predicted class labels for each beat.
     """
-
     # Convert the beat into a tensor with the expected input shape: [# of beats, 1, 260]
     beat_tensor = torch.from_numpy(beat_array).unsqueeze(1).float()
 
@@ -68,7 +75,10 @@ def load_model_and_predict(beat_array, model_class, model_path=MODEL_SAVE_PATH, 
 
 
 if __name__ == "__main__":
-
+    """
+    Example usage: Generate random ECG beats and print predicted classes.
+    Replace `np.random.randn` with real, preprocessed ECG beat data.
+    """
     # Example beat (should be of shape (10 beats, 260 samples/beat))
     sample_beats = np_array = np.random.randn(10, 260)  # Replace with actual preprocessed beat
 
