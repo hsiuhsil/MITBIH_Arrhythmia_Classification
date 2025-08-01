@@ -1,7 +1,32 @@
+"""
+check_augmentation.py
+
+This script visualizes the effects of ECG data augmentation using the `tsaug` library.
+It selects a small number of samples (e.g., 3) from each ECG class, applies the defined
+augmentation pipeline, and plots the original vs. augmented signals side-by-side.
+
+Purpose:
+- Help verify that augmentations are applied correctly and meaningfully.
+- Provide visual intuition about the diversity introduced by augmentation.
+
+Main Steps:
+1. Load preprocessed ECG training data.
+2. Select a few samples per class.
+3. Apply the augmenter defined in `augmenter.py`.
+4. Plot and save the comparison figures.
+
+Output:
+- A figure saved at `PLOT_DIR/augmented_comparison.png` showing 3 original and augmented
+  samples for each class.
+
+Dependencies:
+- numpy, matplotlib
+- Local modules: `config.py`, `augmenter.py`
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from tsaug import TimeWarp, Drift, AddNoise, Pool
 from config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES
 from augmenter import get_ecg_augmenter
 

@@ -1,3 +1,21 @@
+"""
+dataloader.py
+
+This module defines dataset classes and data loader utilities for training,
+validation, testing, and cross-validation for the MIT-BIH ECG arrhythmia dataset.
+
+Key Components:
+- ECGDataset: Custom dataset class that optionally applies data augmentation
+              to balance class distribution.
+- get_dataloaders: Loads train/val/test DataLoaders from preprocessed .npz files.
+- get_cross_validation_loaders: Generates K-fold cross-validation DataLoaders.
+- get_full_trainval_loader: Loads the combined train and val set (used for final retraining).
+
+Used in:
+- main.py (for model training)
+- optuna_utils.py (for model tuning)
+"""
+
 import os
 import numpy as np
 import torch
@@ -10,6 +28,18 @@ from collections import Counter
 """define the dataloaders"""
 
 class ECGDataset(Dataset):
+    """
+    Custom PyTorch Dataset for ECG signals stored in .npz format.
+
+    If `augment=True`, performs data augmentation to balance class distribution
+    using a predefined augmenter. Augments classes with fewer than
+    `target_size_per_class` samples.
+
+    Args:
+        file_path (str): Path to the .npz file containing 'X' and 'y'.
+        augment (bool): Whether to apply augmentation.
+        target_size_per_class (int): Target number of samples per class after augmentation.
+    """
     def __init__(self, file_path, augment=False, target_size_per_class=6000):
         data = np.load(file_path)
         self.X = data['X']
@@ -60,6 +90,17 @@ class ECGDataset(Dataset):
         return x, y
 
 def get_dataloaders(data_dir=DATA_DIR, batch_size=64, augment=False):
+    """
+    Load train, validation, test, and combined train+val DataLoaders from disk.
+
+    Args:
+        data_dir (str): Directory containing 'ecg_train.npz', 'ecg_val.npz', and 'ecg_test.npz'.
+        batch_size (int): Number of samples per batch.
+        augment (bool): Whether to apply augmentation to the training set.
+
+    Returns:
+        Tuple of 4 DataLoaders: (train_loader, val_loader, test_loader, trainval_loader)
+    """
     train_ds = ECGDataset(os.path.join(data_dir, "ecg_train.npz"), augment=augment)
     val_ds   = ECGDataset(os.path.join(data_dir, "ecg_val.npz"))
     test_ds  = ECGDataset(os.path.join(data_dir, "ecg_test.npz"))
@@ -73,7 +114,21 @@ def get_dataloaders(data_dir=DATA_DIR, batch_size=64, augment=False):
     return train_loader, val_loader, test_loader, trainval_loader
 
 def get_cross_validation_loaders(data_dir=DATA_DIR, batch_size=64, k=5, augment=True):
-    """Return a generator of (train_loader, val_loader) for each fold"""
+    """
+    Generate K-fold train and validation DataLoaders for cross-validation.
+
+    Splits 'ecg_train.npz' into `k` folds using StratifiedKFold to preserve label distribution.
+    Temporarily saves the splits as new .npz files to reuse ECGDataset.
+
+    Args:
+        data_dir (str): Directory containing 'ecg_train.npz'.
+        batch_size (int): Batch size for the DataLoaders.
+        k (int): Number of folds.
+        augment (bool): Whether to apply augmentation to each training fold.
+
+    Yields:
+        Tuple[int, DataLoader, DataLoader]: (fold_index, train_loader, val_loader)
+    """
     data = np.load(os.path.join(data_dir, "ecg_train.npz"))
     X = data['X']
     y = data['y']
@@ -97,6 +152,19 @@ def get_cross_validation_loaders(data_dir=DATA_DIR, batch_size=64, k=5, augment=
         yield fold, train_loader, val_loader
 
 def get_full_trainval_loader(data_dir, batch_size=64, augment=True):
+    """
+    Load the combined train and validation set into a single DataLoader.
+
+    Used for final model training after cross-validation.
+
+    Args:
+        data_dir (str): Directory containing 'ecg_train.npz' and 'ecg_val.npz'.
+        batch_size (int): Number of samples per batch.
+        augment (bool): Not used in this version, included for interface consistency.
+
+    Returns:
+        DataLoader: Combined train+val DataLoader.
+    """
     train_npz = np.load(os.path.join(data_dir, "ecg_train.npz"))
     val_npz = np.load(os.path.join(data_dir, "ecg_val.npz"))
 
