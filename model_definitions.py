@@ -1,10 +1,27 @@
+"""
+model_definitions.py
+
+This module defines and initializes neural network architectures for ECG arrhythmia classification.
+Models include:
+- AcharyaCNN: Based on the architecture from Acharya et al. (2017)
+- ECGCNN: A tunable 1D CNN used as the baseline model
+- iTransformer: A simple Transformer-based model with a classification token
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-""" define the models (AcharyaCNN, ECGCNN, LSTM, iTransformer, etc) in this script"""
 
 def get_models(num_classes=5):
+    """
+    Returns a dictionary of model instances with given number of output classes.
+
+    Args:
+        num_classes (int): Number of classification categories.
+
+    Returns:
+        dict: Keys are model names, values are instantiated model objects.
+    """
     return {
         'AcharyaCNN': AcharyaCNN(num_classes=num_classes),
         'ECGCNN':     ECGCNN(num_classes=num_classes),
@@ -12,7 +29,17 @@ def get_models(num_classes=5):
     }
 
 class AcharyaCNN(nn.Module):
-    """ the original methodology was described in Acharya et.al. (2017)"""
+    """
+    CNN architecture inspired by Acharya et al. (2017) for 1D ECG classification.
+
+    Structure:
+        - 3 convolutional + pooling layers
+        - 3 fully connected layers
+        - ReLU activations
+
+    Args:
+        num_classes (int): Number of output classes for classification.
+    """
     def __init__(self, num_classes=5):
         super(AcharyaCNN, self).__init__()
         
@@ -53,7 +80,19 @@ class AcharyaCNN(nn.Module):
 
 # the baseline mode of 1DCNN
 class ECGCNN(nn.Module):
-    """the ECGCNN model in this study"""
+    """
+    A 1D CNN model with tunable hyperparameters and optional third convolutional layer.
+
+    Args:
+        kernel_size (int): Size of convolutional filters.
+        dropout (float): Dropout rate.
+        filters1 (int): Number of filters in first conv layer.
+        filters2 (int): Number of filters in second conv layer.
+        fc1_size (int): Size of the first fully connected layer.
+        num_classes (int): Number of output classes.
+        filters3 (int or None): Number of filters in third conv layer if used.
+        use_third_conv (bool): Whether to include a third conv layer.
+    """
     def __init__(self, kernel_size=5, dropout=0.3, filters1=32, filters2=64, fc1_size=130, num_classes=5, filters3=None, use_third_conv=False):
         super(ECGCNN, self).__init__()
         self.conv1 = nn.Conv1d(1, filters1, kernel_size=kernel_size, padding=kernel_size//2)
@@ -91,6 +130,13 @@ class ECGCNN(nn.Module):
         return self.fc2(x)
 
 class PositionalEncoding(nn.Module):
+    """
+    Fixed sinusoidal positional encoding for 1D transformer inputs.
+
+    Args:
+        d_model (int): Embedding dimension.
+        max_len (int): Maximum sequence length.
+    """
     def __init__(self, d_model, max_len=260):
         super().__init__()
 
@@ -107,7 +153,25 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:, :x.size(1), :]
 
 class iTransformer(nn.Module):
-    """the iTransformer for this study"""
+    """
+    A simplified Transformer-based model for classifying ECG signals.
+
+    Architecture:
+        - Linear projection of 1D input into embedding space
+        - Optional learnable positional embedding
+        - CLS token prepended for sequence classification
+        - Multi-layer TransformerEncoder
+        - Linear classification head
+
+    Args:
+        input_len (int): Length of input signal (default: 260).
+        num_classes (int): Number of output classes.
+        emb_dim (int): Embedding dimension.
+        num_heads (int): Number of attention heads.
+        ff_dim (int): Feed-forward layer size.
+        num_layers (int): Number of Transformer encoder layers.
+        dropout (float): Dropout rate in Transformer layers.
+    """
     def __init__(self, input_len=260, num_classes=5, emb_dim=128, num_heads=4, ff_dim=256, num_layers=4, dropout=0.1):
         super(iTransformer, self).__init__()
 
