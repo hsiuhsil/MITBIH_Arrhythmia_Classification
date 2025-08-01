@@ -4,12 +4,14 @@ from dataloader import get_cross_validation_loaders, get_dataloaders, get_full_t
 from model_definitions import AcharyaCNN, ECGCNN, iTransformer
 from train_utils import train_model, evaluate_model, get_class_weights
 from metrics import plot_training_curves, plot_confusion_matrix, save_classification_report, plot_roc_pr_curves
-from optuna_utils import get_or_run_study, save_best_trial_model
+from optuna_utils import get_or_run_study, save_best_trial_model, load_study
 from utils import set_seed, export_results_json
 
 import os
+import numpy as np
 import torch
 import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
 import time
 import json
 
@@ -238,7 +240,7 @@ def optuna_fold_pipeline(
     plot_subdir = os.path.join(plot_dir, fold_tag)
     os.makedirs(plot_subdir, exist_ok=True)
 
-    study = get_or_run_study(study_path, train_loader, val_loader, n_trials=30)
+    study = get_or_run_study(study_path, train_loader, val_loader, n_trials=20)
 
     # Use train+val for final training (if provided), otherwise just train
     final_loader = retrain_loader if retrain_loader else train_loader
@@ -271,7 +273,8 @@ def get_best_hyperparams_from_folds(save_prefix, num_folds):
         fold_tag = f"fold{fold + 1}"
         study_path = f"{save_prefix}_{fold_tag}.pkl"
         if os.path.exists(study_path):
-            study = optuna.load_study(study_name=None, storage=None, study_path=study_path)
+            # study = optuna.load_study(study_name=None, storage=None, study_path=study_path)
+            study = load_study(study_path)
             best_trials.append(study.best_trial)
     
     # Choose the trial with the lowest value (objective)
@@ -320,7 +323,7 @@ def run_optuna(augment=False, use_kfold=True, num_folds=5):
         print("\n>> Retraining final model using best hyperparameters across folds...")
 
         # Load full training set (train + val)
-        trainval_loader = get_full_train_loader(OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment)
+        trainval_loader = get_full_trainval_loader(OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment)
         
         final_model_path = f"{save_prefix}_final_retrained.pth"
         final_plot_dir = os.path.join(plot_dir, "final_model")

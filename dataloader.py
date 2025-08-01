@@ -2,7 +2,7 @@ import os
 import numpy as np
 import torch
 from sklearn.model_selection import StratifiedKFold
-from torch.utils.data import Dataset, DataLoader, ConcatDataset
+from torch.utils.data import Dataset, TensorDataset,  DataLoader, ConcatDataset
 from augmenter import get_ecg_augmenter
 from config import *
 from collections import Counter

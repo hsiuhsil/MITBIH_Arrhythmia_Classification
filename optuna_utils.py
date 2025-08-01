@@ -122,9 +122,13 @@ def get_or_run_study(study_path, train_loader, val_loader, n_trials=30):
         print(f"Study saved to: {study_path}")
     return study
 
-def save_best_trial_model(study, trainval_loader, num_epoches=30, save_path="results/best_model.pth", device="cpu"):
+def save_best_trial_model(params_or_study, trainval_loader, num_epoches=30, save_path="results/best_model.pth", device="cpu"):
     """Save the best trial model and return training curves."""
-    best_params = study.best_trial.params
+
+    if isinstance(params_or_study, dict):
+        best_params = params_or_study
+    else:
+        best_params = params_or_study.best_trial.params
 
     best_model_params = {
         "kernel_size": best_params['kernel_size'],
