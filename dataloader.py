@@ -72,17 +72,26 @@ def get_dataloaders(data_dir=DATA_DIR, batch_size=64, augment=False):
 
     return train_loader, val_loader, test_loader, trainval_loader
 
-def get_cv_dataloaders(data_path, batch_size=64, n_splits=5, augment=False, seed=42):
-    features_np, labels_np = extract_features_labels_numpy(data_path)
-    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+def get_cross_validation_loaders(data_dir=DATA_DIR, batch_size=64, k=5, augment=True):
+    """Return a generator of (train_loader, val_loader) for each fold"""
+    data = np.load(os.path.join(data_dir, "ecg_train.npz"))
+    X = data['X']
+    y = data['y']
+    skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-    folds = []
-    for train_idx, val_idx in skf.split(features_np, labels_np):
-        train_dataset = ECGDataset(features_np[train_idx], labels_np[train_idx], augment=augment)
-        val_dataset = ECGDataset(features_np[val_idx], labels_np[val_idx], augment=False)
+    for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+        # Subsets for current fold
+        X_train, y_train = X[train_idx], y[train_idx]
+        X_val, y_val = X[val_idx], y[val_idx]
 
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-        folds.append((train_loader, val_loader))
+        # Save temporary npz files to use ECGDataset logic
+        np.savez(os.path.join(data_dir, "ecg_fold_train.npz"), X=X_train, y=y_train)
+        np.savez(os.path.join(data_dir, "ecg_fold_val.npz"),   X=X_val,   y=y_val)
 
-    return folds
+        train_ds = ECGDataset(os.path.join(data_dir, "ecg_fold_train.npz"), augment=augment)
+        val_ds   = ECGDataset(os.path.join(data_dir, "ecg_fold_val.npz"), augment=False)
+
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        val_loader   = DataLoader(val_ds, batch_size=batch_size)
+
+        yield fold, train_loader, val_loader

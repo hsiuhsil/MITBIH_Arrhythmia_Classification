@@ -1,6 +1,6 @@
 from config import *
 from preprocessing import run_pipeline
-from dataloader import get_dataloaders
+from dataloader import get_cross_validation_loaders, get_dataloaders
 from model_definitions import AcharyaCNN, ECGCNN, iTransformer
 from train_utils import train_model, evaluate_model, get_class_weights
 from metrics import plot_training_curves, plot_confusion_matrix, save_classification_report, plot_roc_pr_curves
@@ -15,7 +15,83 @@ import json
 
 set_seed()
 
-def train_and_evaluate(augment: bool, plot_subdir: str):
+def run_single_fold(model_cls, fold_id, train_loader, val_loader, device, plot_subdir, class_names):
+    # === Prepare model, optimizer, criterion ===
+    all_labels = []
+    for _, labels in train_loader:
+        all_labels.extend(labels.numpy())
+
+    class_weights = get_class_weights(all_labels, NUM_CLASSES).to(device)
+    alpha = 0.5
+    soft_weights = (1 - alpha) * torch.ones_like(class_weights) + alpha * class_weights
+    criterion = nn.CrossEntropyLoss(weight=soft_weights) if alpha > 0 else nn.CrossEntropyLoss()
+
+    model = model_cls().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    # === Train ===
+    start_time = time.time()
+    model, train_acc, val_acc, train_loss, val_loss = train_model(
+        model, train_loader, val_loader, optimizer, criterion, EPOCHS, device
+    )
+    elapsed = time.time() - start_time
+    print(f"Fold {fold_id} training time: {elapsed:.2f} seconds")
+
+    # === Evaluate ===
+    acc, preds, labels, probs = evaluate_model(model, val_loader, device, class_names=class_names)
+
+    # === Save plots ===
+    base_path = os.path.join(plot_subdir, f"{model_cls.__name__}_fold{fold_id}")
+    plot_training_curves(train_acc, val_acc, train_loss, val_loss,
+                         save_path=f"{base_path}_training_curves.png")
+    plot_confusion_matrix(labels, preds, class_names,
+                          title=f"{model_cls.__name__} Fold {fold_id} Confusion Matrix",
+                          save_path=f"{base_path}_confusion_matrix.png")
+    save_classification_report(labels, preds, class_names,
+                               path=f"{base_path}_classification_report.txt")
+    plot_roc_pr_curves(labels, probs, class_names, save_dir=f"{base_path}_curves")
+
+    return acc
+
+def train_and_evaluate(augment: bool, plot_subdir: str, use_kfold: bool = False, num_folds: int = 5):
+    os.makedirs(plot_subdir, exist_ok=True)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    models = [("AcharyaCNN", AcharyaCNN), ("ECGCNN", ECGCNN), ("iTransformer", iTransformer)]
+    results = {}
+
+    if use_kfold:
+        print(f"\nRunning {num_folds}-fold cross-validation...")
+        kfold_loaders = get_cross_validation_loaders(OUTPUT_DIR, k=num_folds, batch_size=BATCH_SIZE, augment=augment)
+
+        for name, model_cls in models:
+            fold_accuracies = []
+            for fold_id, train_loader, val_loader in kfold_loaders:
+                print(f"\n{name} - Fold {fold_id}/{num_folds}")
+                acc = run_single_fold(model_cls, fold_id, train_loader, val_loader, device, plot_subdir, CLASS_NAMES)
+                fold_accuracies.append(acc)
+
+            avg_acc = sum(fold_accuracies) / num_folds
+            results[name] = avg_acc
+            print(f"{name} average accuracy: {avg_acc:.4f}")
+
+    else:
+        print("\nRunning single train/val split...")
+        train_loader, val_loader, test_loader, _ = get_dataloaders(
+            OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment
+        )
+
+        for name, model_cls in models:
+            print(f"\nTraining {name} {'with' if augment else 'without'} augmentation...")
+            acc = run_single_fold(model_cls, fold_id=1, train_loader=train_loader,
+                                  val_loader=test_loader,  # Evaluate on test set here
+                                  device=device, plot_subdir=plot_subdir,
+                                  class_names=CLASS_NAMES)
+            results[name] = acc
+
+    return results
+
+def old_train_and_evaluate(augment: bool, plot_subdir: str):
     os.makedirs(plot_subdir, exist_ok=True)
     train_loader, val_loader, test_loader, trainval_loader = get_dataloaders(
         OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment
@@ -78,10 +154,12 @@ def main():
     run_pipeline(DATA_DIR, OUTPUT_DIR, window_size=WINDOW_SIZE)
 
     print("\n=== Training without augmentation ===")
-    no_aug_results = train_and_evaluate(augment=False, plot_subdir=os.path.join(PLOT_DIR, "no_aug"))
+    no_aug_results = train_and_evaluate(augment=False, plot_subdir=os.path.join(PLOT_DIR, "no_aug"),
+                                        use_kfold=True, num_folds=5)
 
     print("\n=== Training with augmentation ===")
-    aug_results = train_and_evaluate(augment=True, plot_subdir=os.path.join(PLOT_DIR, "with_aug"))
+    aug_results = train_and_evaluate(augment=True, plot_subdir=os.path.join(PLOT_DIR, "with_aug"),
+                                     use_kfold=True, num_folds=5)
 
     # Compare before and after augmentation
     print("\n=== Accuracy Comparison ===")
