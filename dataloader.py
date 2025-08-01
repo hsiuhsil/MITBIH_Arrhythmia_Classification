@@ -95,3 +95,15 @@ def get_cross_validation_loaders(data_dir=DATA_DIR, batch_size=64, k=5, augment=
         val_loader   = DataLoader(val_ds, batch_size=batch_size)
 
         yield fold, train_loader, val_loader
+
+def get_full_trainval_loader(data_dir, batch_size=64, augment=True):
+    train_npz = np.load(os.path.join(data_dir, "ecg_train.npz"))
+    val_npz = np.load(os.path.join(data_dir, "ecg_val.npz"))
+
+    X_combined = np.concatenate([train_npz['X'], val_npz['X']], axis=0)
+    y_combined = np.concatenate([train_npz['y'], val_npz['y']], axis=0)
+
+    dataset = TensorDataset(torch.tensor(X_combined[:, None, :], dtype=torch.float32),
+                            torch.tensor(y_combined, dtype=torch.long))
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    return loader
