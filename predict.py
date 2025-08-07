@@ -80,7 +80,7 @@ if __name__ == "__main__":
     Replace `np.random.randn` with real, preprocessed ECG beat data.
     """
     # Example beat (should be of shape (10 beats, 260 samples/beat))
-    sample_beats = np_array = np.random.randn(10, 260)  # Replace with actual preprocessed beat
+    sample_beats = np.random.randn(10, 260)  # Replace with actual preprocessed beat
 
     predicted = load_model_and_predict(sample_beats, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
     print("Predicted class:", predicted)

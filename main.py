@@ -177,59 +177,6 @@ def main():
     # Save results to JSON log
     export_results_json(combined_results, save_path=os.path.join(OUTPUT_DIR, "augmentation_comparison_results.json"))
 
-def old_run_optuna(augment=False):
-    aug_tag = "with_aug" if augment else "no_aug"
-    print(f"\nRunning Optuna tuning with augmentation: {augment}")
-
-    # Create plot/output directory
-    plot_subdir = os.path.join(PLOT_DIR, f"Optuna_ECGCNN_{aug_tag}")
-    os.makedirs(plot_subdir, exist_ok=True)
-
-    # Get data loaders
-    train_loader, val_loader, test_loader, trainval_loader = get_dataloaders(
-        OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment
-    )
-
-    # Run Optuna study
-    study = get_or_run_study(STUDY_PATH, train_loader, val_loader, n_trials=30)
-
-    # Save best model
-    best_model, train_acc, train_loss = save_best_trial_model(
-        study, trainval_loader, num_epoches=30, save_path=MODEL_SAVE_PATH, device=DEVICE
-    )
-
-    # Plot training curves
-    plot_training_curves(
-        train_acc, val_acc=None, train_loss=train_loss, val_loss=None,
-        save_path=os.path.join(plot_subdir, "training_curves.png")
-    )
-
-    # Evaluate on test set
-    print(f"\nFinal Evaluation on Test Set ({aug_tag}):")
-    acc, preds, labels, probs = evaluate_model(
-        best_model, test_loader, DEVICE, CLASS_NAMES
-    )
-
-    # Save confusion matrix and classification report
-    plot_confusion_matrix(
-        labels, preds, CLASS_NAMES,
-        title=f"ECGCNN ({aug_tag})",
-        save_path=os.path.join(plot_subdir, "confusion_matrix.png")
-    )
-    save_classification_report(
-        labels, preds, CLASS_NAMES,
-        path=os.path.join(plot_subdir, "classification_report.txt")
-    )
-
-    # Save ROC and PR curves
-    plot_roc_pr_curves(
-        labels, probs, CLASS_NAMES,
-        save_dir=os.path.join(plot_subdir, "curves")
-    )
-
-    # Store result
-    results[f"Optuna_ECGCNN_{aug_tag}"] = acc
-
 def optuna_fold_pipeline(
     train_loader, val_loader, save_prefix, fold_tag,
     test_loader, plot_dir, augment, retrain_loader=None

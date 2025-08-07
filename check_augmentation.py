@@ -45,7 +45,7 @@ print(f"Loaded data: X shape = {X.shape}, y shape = {y.shape}")
 selected_X = []
 selected_y = []
 
-for class_idx, label in enumerate(CLASS_NAMES):
+for class_idx, label in enumerate(['S','V','F','Q']):
     class_samples = X[y == class_idx]
     indices = np.random.choice(len(class_samples), size=SAMPLES_PER_CLASS, replace=False)
     selected_X.append(class_samples[indices])
@@ -61,7 +61,8 @@ augmented_X = augmenter.augment(selected_X)
 num_samples = selected_X.shape[1]
 time = np.arange(num_samples) / sample_rate  # Time in seconds
 
-fig, axs = plt.subplots(nrows=3, ncols=5, figsize=(12, 6), sharex=True, sharey=True)
+nrows, ncols = 2, 6
+fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(16, 6), sharex=True, sharey=True)
 fig.suptitle("Original vs. Augmented ECG Samples (3 per class)", fontsize=16)
 
 for i, ax in enumerate(axs.flat):
@@ -70,7 +71,7 @@ for i, ax in enumerate(axs.flat):
     ax.set_title(f"Class {selected_y[i]}")
 
     # Show x-axis ticks and label only for bottom row
-    if i // 5 == 2:
+    if i // ncols == 1:
         ax.set_xlabel("Time (sec)")
         ax.set_xticks(np.linspace(0, num_samples / sample_rate, 4))
         ax.set_xticklabels([f"{x:.2f}" for x in np.linspace(0, num_samples / sample_rate, 4)])
@@ -78,7 +79,7 @@ for i, ax in enumerate(axs.flat):
         ax.set_xticks([])
 
     # Show y-axis only for leftmost column
-    if i % 5 == 0:
+    if i % ncols == 0:
         ax.set_ylabel("Amplitude")
     else:
         ax.set_yticks([])
