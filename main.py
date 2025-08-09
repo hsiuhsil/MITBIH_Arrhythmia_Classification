@@ -94,60 +94,6 @@ def train_and_evaluate(augment: bool, plot_subdir: str, use_kfold: bool = False,
 
     return results
 
-def old_train_and_evaluate(augment: bool, plot_subdir: str):
-    os.makedirs(plot_subdir, exist_ok=True)
-    train_loader, val_loader, test_loader, trainval_loader = get_dataloaders(
-        OUTPUT_DIR, batch_size=BATCH_SIZE, augment=augment
-    )
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    models = [("AcharyaCNN", AcharyaCNN), ("ECGCNN", ECGCNN), ("iTransformer", iTransformer)]
-    results = {}
-
-    # Extract labels from train_loader
-    all_labels = []
-    for _, labels in train_loader:
-        all_labels.extend(labels.numpy())
-    
-    class_weights = get_class_weights(all_labels, NUM_CLASSES).to(device)
-    # Soften the weights:
-    alpha = 0.5  # tune this between 0 (no weighting) and 1 (full weights)
-    soft_weights = (1 - alpha) * torch.ones_like(class_weights) + alpha * class_weights
-    print(f"Softened class weights: {soft_weights}")
-    if alpha == 0:
-        criterion = nn.CrossEntropyLoss()
-    else:
-        criterion = nn.CrossEntropyLoss(weight=soft_weights.to(device))
-
-    for name, model_cls in models:
-        print(f"\nTraining {name} {'with' if augment else 'without'} augmentation...")
-        model = model_cls().to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
-        start_time = time.time()
-        model, train_acc, val_acc, train_loss, val_loss = train_model(
-            model, train_loader, val_loader, optimizer, criterion, EPOCHS, device
-        )
-        elapsed = time.time() - start_time
-        print(f"{name} training time: {elapsed:.2f} seconds")
-
-        acc, preds, labels, probs = evaluate_model(model, test_loader, device, class_names=CLASS_NAMES)
-
-        # Save plots and metrics
-        plot_training_curves(train_acc, val_acc, train_loss, val_loss,
-                             save_path=os.path.join(plot_subdir, f"{name}_training_curves.png"))
-        plot_confusion_matrix(labels, preds, CLASS_NAMES,
-                              title=f"{name} Confusion Matrix",
-                              save_path=os.path.join(plot_subdir, f"{name}_confusion_matrix.png"))
-        save_classification_report(labels, preds, CLASS_NAMES,
-                                   path=os.path.join(plot_subdir, f"{name}_classification_report.txt"))
-        plot_roc_pr_curves(labels, probs, CLASS_NAMES,
-                           save_dir=os.path.join(plot_subdir, f"{name}_curves"))
-
-        results[name] = acc
-
-    return results
-
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)

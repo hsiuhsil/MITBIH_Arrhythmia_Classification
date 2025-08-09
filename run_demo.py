@@ -79,8 +79,8 @@ def plot_ecg_predictions(X, y_true, y_pred, save_path=None):
         save_path (str, optional): Path to save the plot image. If None, display instead.
     """
     num_samples = len(X)
-    n_rows, n_cols = 3, 5
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, 6), sharex=True, sharey=True)
+    n_rows, n_cols = 5, 3
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6, 8), sharex=True, sharey=True)
 
     axes = axes.flatten()
 
@@ -89,18 +89,24 @@ def plot_ecg_predictions(X, y_true, y_pred, save_path=None):
     for i in range(n_rows * n_cols):
         ax = axes[i]
         if i < num_samples:
-            ax.plot(time_axis, X[i], color='black')
+            ax.plot(time_axis, X[i], color='blue')
             ax.set_title(f"True: {y_true[i]} | Pred: {y_pred[i]}", fontsize=9)
         else:
             ax.axis('off')  # Hide unused subplots
 
-        ax.set_xticks(np.linspace(0, time_axis[-1], 4))
+        tick_locs = np.linspace(0, time_axis[-1], 4)
+        ax.set_xticks(tick_locs)
+        formatted_labels = [f'{val:.3f}' for val in tick_locs]
+        ax.set_xticklabels(formatted_labels)
         ax.grid(True)
 
     # Only set xlabel on bottom row
     for i in range(n_rows * n_cols):
         if i // n_cols == n_rows - 1:
             axes[i].set_xlabel("Time (sec)", fontsize=9)
+
+        if i % n_cols == 0:
+            axes[i].set_ylabel("Amplitude (arb.)", fontsize=9)
 
     plt.tight_layout()
 

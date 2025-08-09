@@ -67,7 +67,7 @@ def load_model_and_predict(beat_array, model_class, model_path=MODEL_SAVE_PATH, 
     if best_model_params["use_third_conv"]:
         best_model_params["filters3"] = best_params['filters3']
 
-
+    print(best_model_params)
     model = ECGCNN(**best_model_params).to(device)
 
     model.load_state_dict(torch.load(model_path, map_location=device))
