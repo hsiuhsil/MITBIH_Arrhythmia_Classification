@@ -23,16 +23,20 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 
 ```
 ├── main.py                # Main training and evaluation pipeline
+├── preprocessing.py       # Data preprocessing and beat extraction
+├── dataloader.py          # Implements the data loader for this project
+├── augmenter.py           # Defines the data augmentation methods
+├── check_augmentation.py  # Visualizes heartbeats before and after data augmentation
 ├── model_definitions.py   # CNN and Transformer model architectures
 ├── train_utils.py         # Training utilities and loss functions
 ├── optuna_utils.py        # Hyperparameter tuning with Optuna
-├── preprocessing.py       # Data preprocessing and beat extraction
+├── metrics.py             # Contains various visualization tools for model evaluation
 ├── predict.py             # Script for predicting new ECG beats
 ├── run_demo.py            # Demo script: save sample beats, predict, and plot
 ├── config.py              # Hyperparameters, dataset paths, and constants
 ├── utils.py               # General utility functions (seed setting, exports)
 ├── README.md              # This file
-└── /data                  # Raw and processed datasets
+├── notebook.ipynb         # Exploratory analysis without augmentation or k-fold cross-validation
 ```
 
 ---
