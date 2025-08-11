@@ -50,13 +50,13 @@ Evaluation metrics include:
 
 ##  Results Summary
 
-| Model         | Augmentation | Accuracy (mean ± std) |
+| Model         | Augmentation | Weighted Accuracy      |
 |---------------|--------------|------------------------|
-| AcharyaCNN    | Yes          |  XX.XX% ± X.XX         |
-| ECGCNN        | Yes          |  **YY.YY% ± Y.YY**     |
-| iTransformer  | Yes          |  ZZ.ZZ% ± Z.ZZ         |
+| AcharyaCNN    | Yes          |  98.10%                |
+| ECGCNN        | Yes          |  **98.91%**            |
+| iTransformer  | Yes          |  97.36% ± Z.ZZ         |
 
->  *ECGCNN with augmentation currently shows the best overall performance.*
+>  *ECGCNN with augmentation shows the best overall performance.*
 
 ---
 
