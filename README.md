@@ -98,18 +98,12 @@ pip install -r requirements.txt
 ```bash
 python main.py 
 ```
-
-### 3. Run Optuna tuning
-```bash
-python -c "from optuna_utils import run_optuna_study; run_optuna_study(train_loader, val_loader, n_trials=30)"
-```
-
-### 4. Predict new data
+### 3. Predict new data
 ```bash
 python predict.py
 ```
 
-### 5. Run demo visualization
+### 4. Run demo visualization
 ```bash
 python run_demo.py
 ```
