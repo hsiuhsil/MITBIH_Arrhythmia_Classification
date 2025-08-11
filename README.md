@@ -3,6 +3,20 @@
 This project implements deep learning models to classify heartbeats in the MIT-BIH Arrhythmia dataset. It includes full preprocessing, optional data augmentation, model training, hyperparameter tuning using Optuna, and evaluation with cross-validation. The models supported are CNN-based and transformer-based architectures.
 
 ---
+### Key Slides
+
+<p align="center">
+  <img src="slides/slide_2.png" alt="Project Summary" width="30%"/>
+  <img src="slides/slide_3.png" alt="Project Flow Chart" width="30%"/>
+  <img src="slides/slide_10.png" alt="Final Model Results" width="30%"/>
+</p>
+
+---
+
+###  Full Presentation
+You can view all 11 slides here: [Google Slides link](https://docs.google.com/presentation/d/1-wcSTJ1W-nOafntYNnrFyszWSPdyJ72lb4nRjgDH5Lk/edit?usp=sharing)
+
+---
 
 ## Project Structure
 
@@ -19,6 +33,18 @@ This project implements deep learning models to classify heartbeats in the MIT-B
 ├── README.md              # This file
 └── /data                  # Raw and processed datasets
 ```
+
+---
+## Early Exploratory Work
+
+Before implementing augmentation and k-fold cross-validation in the modularized `.py` scripts,  
+I carried out initial experiments in a Jupyter Notebook:  
+- Basic preprocessing (filtering, normalization, DataLoader setup)  
+- First model prototypes (AcharyaCNN, ECGCNN, LSTM, iTransformer)  
+- Training and evaluation without augmentation or k-fold  
+- Confusion matrices, per-class performance visualizations  
+
+You can find the notebook here: [`notebook.ipynb`](notebook.ipynb)  
 
 ---
 
@@ -54,7 +80,7 @@ Evaluation metrics include:
 |---------------|--------------|------------------------|
 | AcharyaCNN    | Yes          |  98.10%                |
 | ECGCNN        | Yes          |  **98.91%**            |
-| iTransformer  | Yes          |  97.36% ± Z.ZZ         |
+| iTransformer  | Yes          |  97.36%                |
 
 >  *ECGCNN with augmentation shows the best overall performance.*
 
