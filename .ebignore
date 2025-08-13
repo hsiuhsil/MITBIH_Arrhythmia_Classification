@@ -1,0 +1,15 @@
+cat > .ebignore << 'EOF'
+# Keep Dockerrun in the bundle
+!Dockerrun.aws.json
+
+# Ignore heavy/dev stuff
+.git/
+venv/
+__pycache__/
+*.ipynb
+data/
+results/
+figures/
+temp/
+slides/
+EOF

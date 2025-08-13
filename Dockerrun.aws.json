@@ -1,0 +1,17 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "mitbih-api",
+      "image": "801750394379.dkr.ecr.us-west-2.amazonaws.com/mitbih-api:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8000
+        }
+      ]
+    }
+  ]
+}
