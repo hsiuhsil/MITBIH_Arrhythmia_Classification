@@ -1,17 +1,11 @@
 {
-  "AWSEBDockerrunVersion": 2,
-  "containerDefinitions": [
-    {
-      "name": "mitbih-api",
-      "image": "801750394379.dkr.ecr.us-west-2.amazonaws.com/mitbih-api:latest",
-      "essential": true,
-      "memory": 512,
-      "portMappings": [
-        {
-          "hostPort": 80,
-          "containerPort": 8000
-        }
-      ]
-    }
-  ]
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "801750394379.dkr.ecr.us-west-2.amazonaws.com/mitbih-api:latest",
+    "Update": "true"
+  },
+  "Ports": [
+    { "ContainerPort": "8000" }
+  ],
+  "Logging": "/var/log/nginx"
 }
