@@ -124,16 +124,16 @@ pip install -r requirements.txt
 
 ### 2. Train a model
 ```bash
-python main.py 
+python -m scripts.main 
 ```
 ### 3. Predict new data
 ```bash
-python predict.py
+python -m scripts.predict
 ```
 
 ### 4. Run demo visualization
 ```bash
-python run_demo.py
+python -m scripts.run_demo
 ```
 
 ---
