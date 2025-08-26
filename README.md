@@ -22,21 +22,29 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 ## Project Structure
 
 ```
-├── main.py                # Main training and evaluation pipeline
-├── preprocessing.py       # Data preprocessing and beat extraction
-├── dataloader.py          # Implements the data loader for this project
-├── augmenter.py           # Defines the data augmentation methods
-├── check_augmentation.py  # Visualizes heartbeats before and after data augmentation
-├── model_definitions.py   # CNN and Transformer model architectures
-├── train_utils.py         # Training utilities and loss functions
-├── optuna_utils.py        # Hyperparameter tuning with Optuna
-├── metrics.py             # Contains various visualization tools for model evaluation
-├── predict.py             # Script for predicting new ECG beats
-├── run_demo.py            # Demo script: save sample beats, predict, and plot
-├── config.py              # Hyperparameters, dataset paths, and constants
-├── utils.py               # General utility functions (seed setting, exports)
-├── README.md              # This file
-├── notebook.ipynb         # Exploratory analysis without augmentation or k-fold cross-validation
+├── mitbih/
+│   ├── data/
+│   │   └── augmenter.py           # Defines the data augmentation methods
+│   │   └── dataloader.py          # Implements the data loader for this project
+│   │   └── preprocessing.py       # Data preprocessing and beat extraction
+│   ├── models/
+│   │   └── model_definitions.py   # CNN and Transformer model architectures
+│   ├── training/
+│   │   └── train_utils.py         # Training utilities and loss functions 
+│   │   └── optuna_utils.py        # Hyperparameter tuning with Optuna
+│   │   └── metrics.py             # Contains various visualization tools for model evaluation
+│   ├── utils/
+│   │   └── config.py              # Hyperparameters, dataset paths, and constants
+│   │   └── utils.py               # General utility functions (seed setting, exports)
+├── scripts/
+│   └── main.py                    # Main training and evaluation pipeline
+│   └── predict.py                 # Script for predicting new ECG beats
+│   └── run_demo.py                # Demo script: save sample beats, predict, and plot
+├── experiments/
+│   └── check_augmentation.py      # Visualizes heartbeats before and after data augmentation
+├── notebooks/
+│   └── notebook.ipynb             # Exploratory analysis without augmentation or k-fold cross-validation
+├── README.md                      # This file
 ```
 
 ---

@@ -30,7 +30,7 @@ BATCH_SIZE = 64
 WINDOW_SIZE = 130
 EPOCHS = 20
 DEVICE = 'cpu'
-USE_OPTUNA = True
+USE_OPTUNA = False
 
 # Class mappings
 AAMI_MAP = {
@@ -46,8 +46,8 @@ LABEL_MAP = {label: idx for idx, label in enumerate(CLASS_NAMES)}
 
 # Path
 DATA_DIR = "./data/physionet.org/files/mitdb/1.0.0"
-OUTPUT_DIR = "./temp"
-PLOT_DIR = "./figures"
+OUTPUT_DIR = "./results/temp"
+PLOT_DIR = "./results/figures"
 MODEL_SAVE_PATH = os.path.join(OUTPUT_DIR, "ecgcnn_optuna_with_aug_final_retrained.pth")
-STUDY_PATH = os.path.join(OUTPUT_DIR,"ecgcnn_optuna_with_aug_fold4.pkl")
+STUDY_PATH = os.path.join(OUTPUT_DIR,"ecgcnn_optuna_with_aug_.pkl")
 DEMO_PATH = os.path.join(OUTPUT_DIR,"demo_beats.npz")
