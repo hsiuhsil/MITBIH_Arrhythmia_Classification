@@ -1,6 +1,16 @@
 # Ignore dataset and reference folders
 data/
 references/
+venv/
+.env/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
 
 # Optional: Ignore notebook checkpoints and Python cache
 .ipynb_checkpoints/
