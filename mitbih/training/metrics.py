@@ -14,7 +14,7 @@ import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, roc_curve, auc, precision_recall_curve
 from sklearn.preprocessing import label_binarize
-from config import CLASS_NAMES
+from mitbih.utils.config import CLASS_NAMES
 
 def plot_confusion_matrix(y_true, y_pred, class_names=CLASS_NAMES, title="Confusion Matrix", save_path=None):
     """

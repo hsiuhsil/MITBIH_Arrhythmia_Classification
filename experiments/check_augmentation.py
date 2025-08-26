@@ -27,8 +27,8 @@ Dependencies:
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES
-from augmenter import get_ecg_augmenter
+from mitbih.utils.config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES
+from mitbih.data.augmenter import get_ecg_augmenter
 
 SAMPLES_PER_CLASS = 3
 sample_rate = 360 #Hz

@@ -10,9 +10,9 @@ back to human-readable AAMI classes.
 import torch
 import torch.nn.functional as F
 import numpy as np
-from model_definitions import AcharyaCNN, ECGCNN, iTransformer  
-from optuna_utils import load_study
-from config import DEVICE, MODEL_SAVE_PATH, STUDY_PATH, LABEL_MAP, CLASS_NAMES 
+from mitbih.models.model_definitions import AcharyaCNN, ECGCNN, iTransformer  
+from mitbih.training.optuna_utils import load_study
+from mitbih.utils.config import DEVICE, MODEL_SAVE_PATH, STUDY_PATH, LABEL_MAP, CLASS_NAMES 
 
 def predict_all_beats(beats, model, device):
     """

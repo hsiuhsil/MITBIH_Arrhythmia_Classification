@@ -10,8 +10,8 @@ import optuna
 import torch
 import torch.nn as nn
 import joblib
-from model_definitions import ECGCNN
-from config import *
+from mitbih.models.model_definitions import ECGCNN
+from mitbih.utils.config import *
 from collections import Counter
 
 def compute_soft_class_weights(loader, device, alpha=0.5):

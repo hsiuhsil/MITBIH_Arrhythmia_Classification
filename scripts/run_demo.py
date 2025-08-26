@@ -14,9 +14,9 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES, DEMO_PATH, MODEL_SAVE_PATH, DEVICE
-from predict import load_model_and_predict
-from model_definitions import ECGCNN
+from mitbih.utils.config import OUTPUT_DIR, PLOT_DIR, CLASS_NAMES, DEMO_PATH, MODEL_SAVE_PATH, DEVICE
+from scripts.predict import load_model_and_predict
+from mitbih.models.model_definitions import ECGCNN
 
 def create_demo_npz(save_path=DEMO_PATH, num_per_class=3):
     """
