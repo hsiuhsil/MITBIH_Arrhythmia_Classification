@@ -1,6 +1,22 @@
 # MIT-BIH Arrhythmia Classification 
+![Status](https://img.shields.io/badge/Built%20from-Scratch-brightgreen)
 
 This project implements deep learning models to classify heartbeats in the MIT-BIH Arrhythmia dataset. It includes full preprocessing, optional data augmentation, model training, hyperparameter tuning using Optuna, and evaluation with cross-validation. The models supported are CNN-based and transformer-based architectures.
+
+---
+## My Contributions
+
+This project was **independently implemented from scratch** (not forked).  
+Specifically, I built and documented:
+
+- **Full data pipeline**: preprocessing, augmentation (`augmenter.py`), and custom dataloaders.  
+- **Custom model design**: implemented **ECGCNN**, an enhanced CNN architecture that outperforms existing baselines.  
+- **Training framework**: utilities for training loops, metrics, logging, and visualization.  
+- **Hyperparameter tuning**: integrated **Optuna** for automated search over CNN/Transformer configs.  
+- **Experiment tracking**: reproducible experiments via scripts and results saving.  
+- **Presentation & results**: slides summarizing methodology and evaluation.
+
+Baselines (e.g., AcharyaCNN) were reimplemented from literature for comparison, but all code in this repository was written by me.
 
 ---
 ## Key Slides
@@ -22,29 +38,29 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 ## Project Structure
 
 ```
-├── mitbih/
-│   ├── data/
-│   │   └── augmenter.py           # Defines the data augmentation methods
-│   │   └── dataloader.py          # Implements the data loader for this project
-│   │   └── preprocessing.py       # Data preprocessing and beat extraction
-│   ├── models/
-│   │   └── model_definitions.py   # CNN and Transformer model architectures
-│   ├── training/
+├── mitbih/                        # Core package for dataset, models, and training
+│   ├── data/                      # Data preprocessing and augmentation
+│   │   └── augmenter.py           # Data augmentation methods
+│   │   └── dataloader.py          # Data loader for the project
+│   │   └── preprocessing.py       # Preprocessing and beat extraction
+│   ├── models/                    # Model architectures
+│   │   └── model_definitions.py   # CNN and Transformer models
+│   ├── training/                  # Training and evaluation logic
 │   │   └── train_utils.py         # Training utilities and loss functions 
 │   │   └── optuna_utils.py        # Hyperparameter tuning with Optuna
-│   │   └── metrics.py             # Contains various visualization tools for model evaluation
-│   ├── utils/
+│   │   └── metrics.py             # Evaluation metrics and visualization tools
+│   ├── utils/                     # Configuration and helper functions
 │   │   └── config.py              # Hyperparameters, dataset paths, and constants
-│   │   └── utils.py               # General utility functions (seed setting, exports)
-├── scripts/
+│   │   └── utils.py               # General utilities (seed setting, exports)
+├── scripts/                       # Standalone scripts for experiments and runs
 │   └── main.py                    # Main training and evaluation pipeline
-│   └── predict.py                 # Script for predicting new ECG beats
-│   └── run_demo.py                # Demo script: save sample beats, predict, and plot
-├── experiments/
-│   └── check_augmentation.py      # Visualizes heartbeats before and after data augmentation
-├── notebooks/
-│   └── notebook.ipynb             # Exploratory analysis without augmentation or k-fold cross-validation
-├── README.md                      # This file
+│   └── predict.py                 # Predict new ECG beats
+│   └── run_demo.py                # Demo: save sample beats, predict, and plot
+├── experiments/                   # Specialized experiments
+│   └── check_augmentation.py      # Visualize heartbeats before and after data augmentation
+├── notebooks/                     # Jupyter notebooks for exploratory analysis
+│   └── notebook.ipynb             # Exploratory data analysis (no augmentation / no k-fold cross-validation)
+├── README.md                      # Project documentation
 ```
 
 ---
@@ -135,6 +151,7 @@ Search space includes:
 ---
 
 ## References
+These works inspired the baseline models and methodology, but all code in this repository was implemented independently by me.
 - [MIT-BIH Dataset](https://www.physionet.org/content/mitdb/1.0.0/)
 - [Acharya et al., “A deep convolutional neural network model to classify heartbeats”, 2017.](https://www.sciencedirect.com/science/article/abs/pii/S0010482517302810)
 - [Optuna: A hyperparameter optimization framework](https://optuna.readthedocs.io/en/stable/)
