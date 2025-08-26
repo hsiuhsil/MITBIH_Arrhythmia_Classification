@@ -57,7 +57,7 @@ I carried out initial experiments in a Jupyter Notebook:
 - Training and evaluation without augmentation or k-fold  
 - Confusion matrices, per-class performance visualizations  
 
-You can find the notebook here: [`notebook.ipynb`](notebook.ipynb)  
+You can find the notebook here: [`notebook.ipynb`](notebooks/notebook.ipynb)  
 
 ---
 
