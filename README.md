@@ -80,9 +80,9 @@ You can find the notebook here: [`notebook.ipynb`](notebooks/notebook.ipynb)
 ##  Models
 
 Implemented:
-- AcharyaCNN (baseline model from literature)
-- ECGCNN (custom enhanced CNN)
-- iTransformer (attention-based architecture)
+- AcharyaCNN (baseline model reimplemented from literature (Acharya et al., 2017))
+- ECGCNN (*custom enhanced CNN I designed*, which achieved the best performance)
+- iTransformer (custom transformer-based model adapted to ECG signals)
 
 Evaluation metrics include:
 - Accuracy
