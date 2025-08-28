@@ -7,6 +7,7 @@ and make predictions on one or multiple ECG heartbeats.
 Supports loading Optuna-optimized ECGCNN model and mapping predicted indices 
 back to human-readable AAMI classes.
 """
+import argparse
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -76,11 +77,50 @@ def load_model_and_predict(beat_array, model_class, model_path=MODEL_SAVE_PATH, 
 
 if __name__ == "__main__":
     """
-    Example usage: Generate random ECG beats and print predicted classes.
-    Replace `np.random.randn` with real, preprocessed ECG beat data.
-    """
-    # Example beat (should be of shape (10 beats, 260 samples/beat))
-    sample_beats = np.random.randn(10, 260)  # Replace with actual preprocessed beat
+    This script allows you to predict the class labels of ECG beats using a trained ECGCNN model.
 
-    predicted = load_model_and_predict(sample_beats, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
-    print("Predicted class:", predicted)
+    Usage options:
+
+    1. Generate random beats (for testing):
+       python predict.py --num_beats 10
+       - Generates 10 random ECG beats (each of length 260 samples)
+       - Prints predicted labels
+
+    2. Use a CSV file containing ECG beats:
+       python predict.py --csv path/to/beats.csv
+       - CSV should have N rows (beats) and 260 columns (samples per beat)
+       - Prints predicted labels for all beats
+
+    3. Use a JSON file containing ECG beats:
+       python predict.py --json path/to/beats.json
+       - JSON should be a list of lists, shape [N, 260]
+       - Prints predicted labels for all beats
+
+    Notes:
+    - Ensure your ECG beats are preprocessed the same way as during training (filtering, normalization).
+    - Output is a dictionary with keys:
+        "num_beats": number of input beats
+        "predictions": list of predicted AAMI class labels (e.g., ["N", "V", "S"])
+    """
+
+    # Example beat (should be of shape (10 beats, 260 samples/beat))
+    #sample_beats = np.random.randn(10, 260)  # Replace with actual preprocessed beat
+
+    parser = argparse.ArgumentParser(description="Predict ECG beat classes.")
+    parser.add_argument("--csv", type=str, help="Path to CSV file containing ECG beats (N x 260).")
+    parser.add_argument("--json", type=str, help="Path to JSON file containing ECG beats.")
+    parser.add_argument("--num_beats", type=int, default=5, help="Generate random beats if no input provided.")
+    args = parser.parse_args()
+
+    if args.csv:
+        beat_array = pd.read_csv(args.csv, header=None).to_numpy()
+    elif args.json:
+        import json
+        with open(args.json) as f:
+            beat_array = np.array(json.load(f))
+    else:
+        beat_array = np.random.randn(args.num_beats, 260)
+
+    predicted_labels = load_model_and_predict(beat_array, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
+    result = {"num_beats": len(predicted_labels), "predictions": predicted_labels}
+    print(result)
