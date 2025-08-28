@@ -180,7 +180,8 @@ def run_pipeline(data_dir=DATA_DIR, output_dir=OUTPUT_DIR, aami_map=AAMI_MAP, la
     np.savez(os.path.join(output_dir, "ecg_beat_dataset.npz"), X=X_raw, y=y, label_map=label_map)
 
     # Preprocess & split
-    train, val, test = preprocess_and_split(X_raw, y)
+    X_preprocessed = preprocess_beats(X_raw)
+    train, val, test = split_data(X_preprocessed, y)
     save_npz_datasets(output_dir, [train, val, test])
 
 def extract_features_labels_numpy(data_dir):
