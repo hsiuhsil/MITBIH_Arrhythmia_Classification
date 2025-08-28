@@ -1,5 +1,6 @@
 # Ignore dataset and reference folders
-data/
+/data/
+!mitbih/data/
 references/
 venv/
 .env/
