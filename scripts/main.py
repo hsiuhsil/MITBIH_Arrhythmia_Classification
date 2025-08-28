@@ -168,10 +168,19 @@ def get_best_hyperparams_from_folds(save_prefix, num_folds):
         if os.path.exists(study_path):
             # study = optuna.load_study(study_name=None, storage=None, study_path=study_path)
             study = load_study(study_path)
-            best_trials.append(study.best_trial)
-    
+            best_trials.append((fold + 1, study.best_trial))
+
+    if not best_trials:
+        raise ValueError("No study files found.")    
+
     # Choose the trial with the lowest value (objective)
-    best_trial = min(best_trials, key=lambda t: t.value)
+    best_fold, best_trial = min(best_trials, key=lambda t: t[1].value)
+    
+    print(f"Best trial found in fold {best_fold} with value {best_trial.value}")
+    print("Best hyperparameters:")
+    for k, v in best_trial.params.items():
+        print(f"  {k}: {v}")
+
     return best_trial.params
 
 def run_optuna(augment=False, use_kfold=True, num_folds=5):
