@@ -134,16 +134,25 @@ All processed outputs, trained models, and evaluation figures are stored in the 
 - Figures and model checkpoints can be used to **replicate evaluation results** without full retraining.  
 
 ---
+## Results Summary
 
-##  Results Summary
+### Models with Augmentation (5-fold CV median, without fine-tuning)
 
-| Model         | Augmentation | Weighted Accuracy      |
-|---------------|--------------|------------------------|
-| AcharyaCNN    | Yes          |  98.10%                |
-| ECGCNN        | Yes          |  **98.91%**            |
-| iTransformer  | Yes          |  97.36%                |
+| Model         | Weighted Accuracy |
+|---------------|-----------------|
+| AcharyaCNN    | 98.35%          |
+| ECGCNN        | 98.87%          |
+| iTransformer  | 98.32%          |
 
->  *ECGCNN with augmentation shows the best overall performance.*
+> *ECGCNN shows the best performance among base models.*
+
+### ECGCNN with Augmentation (Fine-tuned)
+
+| Model         | Weighted Accuracy |
+|---------------|-----------------|
+| ECGCNN (fine-tuned) | 99.04%      |
+
+> *Fine-tuning ECGCNN with augmentation further improves performance.*
 
 ---
 
