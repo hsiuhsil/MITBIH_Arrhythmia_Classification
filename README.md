@@ -58,6 +58,9 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 │   └── run_demo.py                # Demo: save sample beats, predict, and plot
 ├── experiments/                   # Specialized experiments
 │   └── check_augmentation.py      # Visualize heartbeats before and after data augmentation
+├── results/                       # Trained models, evaluation outputs, and figures
+│   └── temp/                      # Model checkpoints, Optuna results, and preprocessed datasets (.npz not tracked)
+│   └── figures/                   # Plots and visualizations of model performance
 ├── notebooks/                     # Jupyter notebooks for exploratory analysis
 │   └── notebook.ipynb             # Exploratory data analysis (no augmentation / no k-fold cross-validation)
 ├── README.md                      # Project documentation
@@ -100,6 +103,35 @@ Evaluation metrics include:
 - **Optimizer:** Adam
 - **Data Augmentation:** Optional random rescaling and jitter on training beats
 - **Hyperparameter Tuning:** Optuna with search over learning rate, dropout, weight decay, and class weight smoothing
+
+---
+
+## Results
+
+All processed outputs, trained models, and evaluation figures are stored in the `results/` folder.  
+
+### 1. Model Outputs
+- **`results/temp/`** contains:
+  - Trained model checkpoints (`.pth` and `.pkl`) for each fold and final retrained model  
+  - Hyperparameter tuning results (`.json`) from Optuna  
+  - Augmentation comparison results (`augmentation_comparison_results.json`)  
+  - Preprocessed datasets (`.npz`) **not tracked on GitHub**  
+
+### 2. Evaluation Figures
+- **`results/figures/`** contains visualizations of model performance:
+  - `Optuna_ECGCNN_with_aug/` – plots for each fold and final model after hyperparameter tuning  
+  - `no_aug/` – metrics and plots for models trained **without augmentation**  
+  - `with_aug/` – metrics and plots for models trained **with augmentation**  
+
+- Each folder contains:
+  - Training curves (`*_training_curves.png`)  
+  - Classification reports (`*_classification_report.txt`)  
+  - Confusion matrices (`*_confusion_matrix.png`)  
+  - Fold-specific visualizations (fold0…fold5)  
+
+### 3. Notes
+- `.npz` files are excluded from GitHub to reduce repository size, but they can be regenerated using preprocessing scripts.  
+- Figures and model checkpoints can be used to **replicate evaluation results** without full retraining.  
 
 ---
 

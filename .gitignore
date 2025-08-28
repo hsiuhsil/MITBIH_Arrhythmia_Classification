@@ -3,6 +3,7 @@ data/
 references/
 venv/
 .env/
+results/**/*.npz
 
 # OS-specific files
 .DS_Store
