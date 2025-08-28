@@ -49,5 +49,5 @@ DATA_DIR = "./data/physionet.org/files/mitdb/1.0.0"
 OUTPUT_DIR = "./results/temp"
 PLOT_DIR = "./results/figures"
 MODEL_SAVE_PATH = os.path.join(OUTPUT_DIR, "ecgcnn_optuna_with_aug_final_retrained.pth")
-STUDY_PATH = os.path.join(OUTPUT_DIR,"ecgcnn_optuna_with_aug_.pkl")
+STUDY_PATH = os.path.join(OUTPUT_DIR,"ecgcnn_optuna_with_aug_fold4.pkl")
 DEMO_PATH = os.path.join(OUTPUT_DIR,"demo_beats.npz")
