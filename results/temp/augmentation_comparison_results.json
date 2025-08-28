@@ -1,0 +1,14 @@
+{
+    "AcharyaCNN": {
+        "no_augmentation": 0.9782940677413039,
+        "with_augmentation": 0.9824055341643281
+    },
+    "ECGCNN": {
+        "no_augmentation": 0.9856555504796709,
+        "with_augmentation": 0.9888272531488612
+    },
+    "iTransformer": {
+        "no_augmentation": 0.9677739346081055,
+        "with_augmentation": 0.9808131566925538
+    }
+}
