@@ -3,8 +3,10 @@
 !mitbih/data/
 references/
 venv/
+venv_test/
 .env/
 results/**/*.npz
+dockerfile
 
 # OS-specific files
 .DS_Store

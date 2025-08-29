@@ -15,8 +15,8 @@ attrs==25.3.0
 babel==2.17.0
 beautifulsoup4==4.13.4
 bleach==6.2.0
-brotlicffi==1.0.0
-certifi==2025.7.0
+brotlicffi==1.1.0.0
+certifi==2025.8.3
 cffi==1.15.1
 charset-normalizer==3.2.0
 click==8.2.1
@@ -31,6 +31,7 @@ defusedxml==0.7.1
 dill==0.4.0
 exceptiongroup==1.3.0
 executing==2.2.0
+fastapi==0.116.1
 fastjsonschema==2.21.1
 filelock==3.12.2
 fonttools==4.58.5
@@ -77,9 +78,9 @@ matplotlib==3.10.3
 matplotlib-inline==0.1.7
 mccabe==0.7.0
 mistune==3.1.3
-mkl-fft==1.3.6
-mkl-random==1.2.2
-mkl-service==2.4.0
+#mkl-fft==1.3.6
+#mkl-random==1.2.2
+#mkl-service==2.4.0
 mpmath==1.3.0
 msgpack==1.1.1
 multidict==6.6.3
@@ -120,7 +121,7 @@ python-json-logger==3.3.0
 pytz==2025.2
 PyYAML==6.0
 pyzmq==27.0.0
-ray==2.47.1
+ray==2.46.0
 referencing==0.36.2
 requests==2.31.0
 rfc3339-validator==0.1.4
@@ -152,8 +153,9 @@ tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3
 types-python-dateutil==2.9.0.20250708
-typing-extensions==4.9.0
+typing-extensions>=4.12
 tzdata==2025.2
+unicorn==2.1.3
 uri-template==1.3.0
 urllib3==2.0.4
 wcwidth==0.2.13
