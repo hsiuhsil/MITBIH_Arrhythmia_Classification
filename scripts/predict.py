@@ -7,6 +7,8 @@ and make predictions on one or multiple ECG heartbeats.
 Supports loading Optuna-optimized ECGCNN model and mapping predicted indices 
 back to human-readable AAMI classes.
 """
+import json
+import logging
 import argparse
 import torch
 import torch.nn.functional as F
@@ -14,6 +16,7 @@ import numpy as np
 from mitbih.models.model_definitions import AcharyaCNN, ECGCNN, iTransformer  
 from mitbih.training.optuna_utils import load_study
 from mitbih.utils.config import DEVICE, MODEL_SAVE_PATH, STUDY_PATH, LABEL_MAP, CLASS_NAMES 
+from mitbih.data.preprocessing import preprocess_beats
 
 def predict_all_beats(beats, model, device):
     """
@@ -121,6 +124,13 @@ if __name__ == "__main__":
     else:
         beat_array = np.random.randn(args.num_beats, 260)
 
-    predicted_labels = load_model_and_predict(beat_array, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
+    if beat_array.ndim != 2 or beat_array.shape[1] != 260:
+        raise ValueError(f"Expected shape (N, 260), got {beat_array.shape}")
+
+    beat_preprocessed = preprocess_beats(beat_array)
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Preprocessing beats...")
+
+    predicted_labels = load_model_and_predict(beat_preprocessed, ECGCNN, model_path=MODEL_SAVE_PATH, device=DEVICE)
     result = {"num_beats": len(predicted_labels), "predictions": predicted_labels}
-    print(result)
+    print(json.dumps(result))
