@@ -49,7 +49,11 @@ async def predict_ecg_csv(file: UploadFile = File(...)):
     try:
         # Read CSV into DataFrame
         df = pd.read_csv(file.file, header=None)
-        beat_array = df.to_numpy(dtype=np.float32)
+
+        if df.shape[1] == 261:  
+            beat_array = df.iloc[:, :-1].to_numpy(dtype=np.float32)
+        else:
+            beat_array = df.to_numpy(dtype=np.float32)
 
         # Validate shape
         if beat_array.ndim != 2 or beat_array.shape[1] != 260:
@@ -68,3 +72,7 @@ async def predict_ecg_csv(file: UploadFile = File(...)):
     except Exception as e:
         logging.exception("CSV prediction failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/")
+def root():
+    return {"message": "ECGCNN API is running"}
