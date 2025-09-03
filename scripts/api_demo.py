@@ -16,8 +16,8 @@ from pathlib import Path
 # -------------------------------
 NPZ_PATH = Path("results/temp/demo_beats.npz")
 CSV_PATH = Path("results/temp/demo_beats.csv")
-#API_URL = "http://18.188.196.254/predict_csv"  # Using /predict_json if the input is in the json format. 
-API_URL = "http://127.0.0.1:8000/predict_csv"
+API_URL = "http://18.188.196.254/predict_csv"  # Using /predict_json if the input is in the json format. 
+#API_URL = "http://127.0.0.1:8000/predict_csv"
 
 # -------------------------------
 # Step 1: Convert NPZ to CSV
