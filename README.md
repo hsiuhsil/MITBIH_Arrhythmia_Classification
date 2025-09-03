@@ -33,8 +33,11 @@ Baselines (e.g., AcharyaCNN) were reimplemented from literature for comparison, 
 ### Fine-Tuned Model Results
 <img src="slides/slide_10.png" alt="Fine-Tuned Model" width="80%">
 
+### Remote API Deployment on AWS EC2
+<img src="slides/slide_12.png" alt="Deployment" width="80%">
+
 ###  Full Presentation
-You can view all 11 slides here: [Google Slides link](https://docs.google.com/presentation/d/1-wcSTJ1W-nOafntYNnrFyszWSPdyJ72lb4nRjgDH5Lk/edit?usp=sharing)
+You can view all 12 slides here: [Google Slides link](https://docs.google.com/presentation/d/1-wcSTJ1W-nOafntYNnrFyszWSPdyJ72lb4nRjgDH5Lk/edit?usp=sharing)
 
 ---
 
