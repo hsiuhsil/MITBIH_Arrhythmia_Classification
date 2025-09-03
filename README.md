@@ -240,6 +240,37 @@ Search space includes:
 - Class weight smoothing parameter (class_weight_alpha)
 - Number of convolution filters, kernel sizes, fully connected layer sizes, and use of third conv layer for the ECGCNN model
 
+---
+
+## Deployment of ECGCNN on AWS EC2
+
+### Overview:
+- Fine-tuned ECGCNN model served via FastAPI on AWS EC2.
+- Remote prediction available through API or scripts/api_demo.py.
+
+### Steps:
+#### 1.	Setup EC2 instance
+- Install Python, virtual environment, dependencies (requirements.txt).
+
+#### 2. Run FastAPI
+- Use uvicorn api.app:app --host 0.0.0.0 --port 8000 in background.
+
+#### 3.	Configure Nginx reverse proxy
+- Forward public requests to FastAPI, enable port 80 access.
+
+#### 4.	Test API
+- curl http://<public_ip>/ → check service status
+  - Public IP: 18.188.196.254
+- curl -F "file=@results/temp/demo_beats.csv" http://<public_ip>/predict_csv → get predictions
+- Or run python -m scripts.api_demo for sample demo.
+	
+#### 5.	Monitoring & Maintenance
+- Check logs (/var/log/nginx/error.log)
+- Manage disk space and background processes
+
+#### Notes:
+- Free-tier AWS limits may constrain resource usage.
+- API allows remote access without local model execution.
 
 ---
 
