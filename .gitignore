@@ -6,6 +6,7 @@ venv/
 venv_test/
 .env/
 results/**/*.npz
+!results/temp/demo_beats.npz
 dockerfile
 
 # OS-specific files
