@@ -3,6 +3,8 @@
 
 This project implements deep learning models to classify heartbeats in the MIT-BIH Arrhythmia dataset. It includes full preprocessing, optional data augmentation, model training, hyperparameter tuning using Optuna, and evaluation with cross-validation. The models supported are CNN-based and transformer-based architectures.
 
+Additionally, the ECGCNN model has been deployed as a **FastAPI service on an AWS EC2 instance**, enabling users to make predictions remotely via a simple API call or the provided Python demo script.
+
 ---
 ## My Contributions
 
@@ -15,6 +17,7 @@ Specifically, I built and documented:
 - **Hyperparameter tuning**: integrated **Optuna** for automated search over CNN/Transformer configs.  
 - **Experiment tracking**: reproducible experiments via scripts and results saving.  
 - **Presentation & results**: slides summarizing methodology and evaluation.
+- **Remote API deployment**: set up the ECGCNN model as a **FastAPI service on AWS EC2**, enabling remote prediction via API or demo script.
 
 Baselines (e.g., AcharyaCNN) were reimplemented from literature for comparison, but all code in this repository was written by me.
 
@@ -52,6 +55,9 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 │   ├── utils/                     # Configuration and helper functions
 │   │   └── config.py              # Hyperparameters, dataset paths, and constants
 │   │   └── utils.py               # General utilities (seed setting, exports)
+├── api/                           # FastAPI service and test scripts
+│   └── app.py                     # FastAPI application
+│   └── test_api.py                # API testing scripts
 ├── scripts/                       # Standalone scripts for experiments and runs
 │   └── main.py                    # Main training and evaluation pipeline
 │   └── predict.py                 # Predict new ECG beats
