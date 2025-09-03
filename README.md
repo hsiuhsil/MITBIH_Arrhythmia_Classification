@@ -56,6 +56,7 @@ You can view all 11 slides here: [Google Slides link](https://docs.google.com/pr
 │   └── main.py                    # Main training and evaluation pipeline
 │   └── predict.py                 # Predict new ECG beats
 │   └── run_demo.py                # Demo: save sample beats, predict, and plot
+│   └── api_demo.py                # Demo: call remote API for predictions
 ├── experiments/                   # Specialized experiments
 │   └── check_augmentation.py      # Visualize heartbeats before and after data augmentation
 ├── results/                       # Trained models, evaluation outputs, and figures
@@ -175,6 +176,48 @@ python -m scripts.predict
 ### 4. Run demo visualization
 ```bash
 python -m scripts.run_demo
+```
+
+### 5. Remote API Deployment (AWS EC2)
+
+The ECGCNN model is also deployed as a FastAPI service on AWS EC2.
+Public IP: http://18.188.196.254/
+
+#### Check API is running
+```bash
+curl http://18.188.196.254/
+```
+
+- Response:
+```json
+{"message":"ECGCNN API is running"}
+```
+
+#### Predict from CSV
+```bash
+curl -F "file=@results/temp/demo_beats.csv" http://18.188.196.254/predict_csv
+```
+
+- Response:
+```json
+{"predictions":["N","N","N","V","V","V","S","S","S","Q","Q","Q","F","F","F"]}
+```
+
+#### Using Python demo script
+```bash
+python -m scripts.api_demo
+```
+
+- This script will
+  - Load sample ECG beats from results/temp/demo_beats.npz
+  - Convert them to CSV
+  - Send CSV to the remote API for prediction
+  - Print the predictions
+
+- Sample output:
+```text
+[INFO] Saved CSV to results/temp/demo_beats.csv
+[INFO] Prediction result: {'predictions': ['N', 'N', 'N', 'V', 'V', 'V', 'S', 'S', 'S', 'Q', 'Q', 'Q', 'F', 'F', 'F']}
 ```
 
 ---
